@@ -73,7 +73,7 @@ export default function CustomersPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.name || !form.mobile) { toast.error('Name and mobile are required'); return; }
+
     try {
       await addDocument('customers', form);
       toast.success('Customer added');
