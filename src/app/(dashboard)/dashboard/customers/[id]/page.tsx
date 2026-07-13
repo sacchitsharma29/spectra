@@ -78,12 +78,8 @@ export default function CustomerDetailPage() {
                 {[
                   { label: 'Customer ID', value: customer.customerId || '-' },
                   { label: 'Phone', value: customer.mobile },
-                  { label: 'WhatsApp', value: customer.whatsapp || '-' },
-                  { label: 'Email', value: customer.email || '-' },
                   { label: 'Capacity', value: customer.capacity ? `${customer.capacity} kW` : '-' },
                   { label: 'Address', value: customer.address ? `${customer.address}, ${customer.city || ''}, ${customer.state || ''} - ${customer.pincode || ''}` : '-' },
-                  { label: 'Aadhaar', value: customer.aadhaar || '-' },
-                  { label: 'PAN', value: customer.pan || '-' },
                 ].map((item) => (
                   <div key={item.label} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                     <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
