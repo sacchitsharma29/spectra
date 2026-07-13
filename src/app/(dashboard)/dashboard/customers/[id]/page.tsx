@@ -24,6 +24,9 @@ export default function CustomerDetailPage() {
   const { data: customer, loading: customerLoading } = useDocument<Customer>('customers', customerId);
   const { data: projects } = useCollection<Project>('projects', [where('customerId', '==', customerId)]);
   const { data: payments } = useCollection<Payment>('payments', [where('customerId', '==', customerId)]);
+  const canWrite = useCanWrite();
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({ customerId: '', name: '', mobile: '', capacity: '', address: '' });
 
   if (customerLoading) {
     return (
@@ -50,10 +53,6 @@ export default function CustomerDetailPage() {
       </div>
     );
   }
-
-  const canWrite = useCanWrite();
-  const [showEdit, setShowEdit] = useState(false);
-  const [editForm, setEditForm] = useState({ customerId: '', name: '', mobile: '', capacity: '', address: '' });
 
   const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   const totalPending = 0;
