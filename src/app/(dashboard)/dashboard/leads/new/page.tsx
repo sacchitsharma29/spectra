@@ -56,7 +56,6 @@ export default function NewLeadPage() {
   const [form, setForm] = useState({
     customerName: '',
     mobile: '',
-    whatsapp: '',
     email: '',
     address: '',
     city: '',
@@ -86,7 +85,6 @@ export default function NewLeadPage() {
       await addDocument('leads', {
         customerName: form.customerName,
         mobile: form.mobile,
-        whatsapp: form.whatsapp || '',
         email: form.email || '',
         address: form.address || '',
         city: form.city || '',
@@ -150,13 +148,6 @@ export default function NewLeadPage() {
                   onChange={(e) => updateField('mobile', e.target.value)}
                   icon={<Phone className="w-4 h-4" />}
                   required
-                />
-                <Input
-                  label="WhatsApp Number"
-                  placeholder="+91 98765 43210"
-                  value={form.whatsapp}
-                  onChange={(e) => updateField('whatsapp', e.target.value)}
-                  icon={<Phone className="w-4 h-4" />}
                 />
                 <Input
                   label="Email"
