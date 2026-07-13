@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Users, UserPlus, FileText, HardHat, CheckCircle2,
-  ArrowUpRight, Calendar,
+  Users, UserPlus, FileText, HardHat, CheckCircle2, CreditCard,
+  ArrowUpRight, Calendar, DollarSign,
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
@@ -13,34 +13,34 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCollection } from '@/hooks/useFirestore';
 import { formatDate, toDate } from '@/lib/utils';
-import { Lead, Customer } from '@/types';
+import { Lead } from '@/types';
 
 export default function DashboardPage() {
   const { userData, firestoreReady } = useAuth();
   const { data: leads, loading: leadsLoading } = useCollection<Lead>('leads');
-  const { data: customers } = useCollection<Customer>('customers');
 
   const totalLeads = leads.length;
-  const totalCustomers = customers.length;
   const newToday = leads.filter((l) => {
     const d = toDate(l.createdAt);
     return d && d.toDateString() === new Date().toDateString();
   }).length;
+  const activeCustomers = leads.filter((l) => l.status === 'Confirmed' || l.status === 'Installed').length;
   const quotationsSent = leads.filter((l) => l.status === 'Quotation Sent').length;
   const projectsInProgress = leads.filter((l) => l.status === 'Site Survey' || l.status === 'Negotiation').length;
   const completedProjects = leads.filter((l) => l.status === 'Installed').length;
 
   const stats = [
     { title: 'Total Leads', value: totalLeads, icon: <UserPlus className="w-6 h-6" />, color: 'blue' as const },
-    { title: 'Total Customers', value: totalCustomers, icon: <Users className="w-6 h-6" />, color: 'green' as const },
+    { title: 'New Today', value: newToday, icon: <Users className="w-6 h-6" />, color: 'green' as const },
+    { title: 'Active Customers', value: activeCustomers, icon: <Users className="w-6 h-6" />, color: 'purple' as const },
     { title: 'Quotations Sent', value: quotationsSent, icon: <FileText className="w-6 h-6" />, color: 'teal' as const },
     { title: 'In Progress', value: projectsInProgress, icon: <HardHat className="w-6 h-6" />, color: 'orange' as const },
     { title: 'Completed', value: completedProjects, icon: <CheckCircle2 className="w-6 h-6" />, color: 'green' as const },
-    { title: 'New Today', value: newToday, icon: <Calendar className="w-6 h-6" />, color: 'blue' as const },
+    { title: 'Pending Payments', value: '₹0', icon: <CreditCard className="w-6 h-6" />, color: 'red' as const },
+    { title: 'Monthly Revenue', value: '₹0', icon: <DollarSign className="w-6 h-6" />, color: 'green' as const },
   ];
 
   const recentLeads = [...leads].slice(0, 5);
-  const recentCustomers = [...customers].slice(0, 5);
 
   const quickActions = [
     { label: 'New Lead', icon: UserPlus, href: '/dashboard/leads/new', color: 'bg-blue-500' },
@@ -129,45 +129,6 @@ export default function DashboardPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{lead.source}</td>
                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(lead.createdAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Customers</h2>
-          </CardHeader>
-          <CardContent className="p-0">
-            {recentCustomers.length === 0 ? (
-              <EmptyState
-                icon={<Users className="w-8 h-8 text-gray-400" />}
-                title="No customers yet"
-                description="Add your first customer to get started"
-                action={{ label: 'Add Customer', onClick: () => window.location.href = '/dashboard/customers' }}
-              />
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-800/50">
-                    <tr>
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer ID</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Capacity</th>
-                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {recentCustomers.map((c) => (
-                      <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => window.location.href = `/dashboard/customers/${c.id}`}>
-                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{c.customerId}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{c.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{c.capacity ? `${c.capacity} kW` : '-'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{formatDate(c.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
