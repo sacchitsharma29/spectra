@@ -31,7 +31,7 @@ export default function CustomersPage() {
           <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">{getInitials(c.name)}</div>
           <div>
             <p className="font-medium text-gray-900 dark:text-gray-100">{c.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{c.customerId || c.id}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{c.customerId}</p>
           </div>
         </div>
       ),

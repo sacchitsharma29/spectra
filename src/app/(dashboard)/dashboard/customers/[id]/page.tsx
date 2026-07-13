@@ -1,17 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { useDocument, useCollection } from '@/hooks/useFirestore';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
+import { useDocument, useCollection, updateDocument } from '@/hooks/useFirestore';
 import { where } from 'firebase/firestore';
 import { formatDate, formatCurrency } from '@/lib/utils';
+import { useCanWrite } from '@/lib/permissions';
 import { Customer, Project, Payment } from '@/types';
+import toast from 'react-hot-toast';
 
 export default function CustomerDetailPage() {
   const params = useParams();
@@ -47,8 +51,32 @@ export default function CustomerDetailPage() {
     );
   }
 
+  const canWrite = useCanWrite();
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({ customerId: '', name: '', mobile: '', capacity: '', address: '' });
+
   const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   const totalPending = 0;
+
+  const openEdit = () => {
+    setEditForm({
+      customerId: customer?.customerId || '',
+      name: customer?.name || '',
+      mobile: customer?.mobile || '',
+      capacity: customer?.capacity || '',
+      address: customer?.address || '',
+    });
+    setShowEdit(true);
+  };
+
+  const handleEdit = async () => {
+    if (!customer) return;
+    try {
+      await updateDocument('customers', customer.id, editForm);
+      toast.success('Customer updated');
+      setShowEdit(false);
+    } catch (err: any) { toast.error(err?.message || 'Failed to update customer'); }
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -58,13 +86,16 @@ export default function CustomerDetailPage() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{customer.name}</h1>
-            <Badge>{customer.customerType}</Badge>
+            {customer.customerType && <Badge>{customer.customerType}</Badge>}
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">{customer.customerId || customer.id} &middot; Customer since {formatDate(customer.createdAt)}</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{customer.customerId} &middot; Customer since {formatDate(customer.createdAt)}</p>
         </div>
+        {canWrite && (
+          <Button variant="secondary" size="sm" icon={<Pencil className="w-4 h-4" />} onClick={openEdit}>Edit</Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -180,6 +211,20 @@ export default function CustomerDetailPage() {
           )}
         </div>
       </div>
+
+      <Modal isOpen={showEdit} onClose={() => setShowEdit(false)} title="Edit Customer">
+        <div className="space-y-4">
+          <Input label="Customer ID" value={editForm.customerId} onChange={(e) => setEditForm({ ...editForm, customerId: e.target.value })} />
+          <Input label="Name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+          <Input label="Mobile" value={editForm.mobile} onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })} />
+          <Input label="Capacity (kW)" value={editForm.capacity} onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })} />
+          <Input label="Address" value={editForm.address} onChange={(e) => setEditForm({ ...editForm, address: e.target.value })} />
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setShowEdit(false)}>Cancel</Button>
+            <Button onClick={handleEdit}>Save</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
