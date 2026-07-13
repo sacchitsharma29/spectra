@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Phone, Mail, MapPin, Trash2 } from 'lucide-react';
+import { Plus, Phone, Mail, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Badge } from '@/components/ui/Badge';
+
 import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore';
 import { formatDate, getInitials } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
@@ -45,8 +45,8 @@ export default function CustomersPage() {
         </div>
       ),
     },
-    { key: 'city', header: 'Location', render: (c) => <div className="flex items-center gap-1 text-gray-500"><MapPin className="w-3 h-3" />{c.city || '-'}</div> },
-    { key: 'customerType', header: 'Type', render: (c) => <Badge variant={c.customerType === 'Commercial' ? 'info' : 'default'}>{c.customerType}</Badge> },
+    { key: 'capacity', header: 'Capacity', render: (c) => <span className="text-gray-500">{c.capacity ? `${c.capacity} kW` : '-'}</span> },
+    { key: 'address', header: 'Address', render: (c) => <span className="text-gray-500 truncate max-w-[200px] block">{c.address || '-'}</span> },
     { key: 'createdAt', header: 'Since', render: (c) => <span className="text-gray-500">{formatDate(c.createdAt)}</span> },
     ...(canWrite ? [{
       key: 'actions' as const, header: '', width: '50px' as const,
