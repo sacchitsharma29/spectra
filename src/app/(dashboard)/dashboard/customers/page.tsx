@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/Input';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 
+import { orderBy } from 'firebase/firestore';
 import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore';
 import { formatDate, getInitials } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
@@ -17,7 +18,7 @@ import { Customer } from '@/types';
 import toast from 'react-hot-toast';
 
 export default function CustomersPage() {
-  const { data: customers, loading } = useCollection<Customer>('customers');
+  const { data: customers, loading } = useCollection<Customer>('customers', [orderBy('createdAt', 'desc')]);
   const canWrite = useCanWrite();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ customerId: '', name: '', mobile: '', capacity: '', address: '' });
