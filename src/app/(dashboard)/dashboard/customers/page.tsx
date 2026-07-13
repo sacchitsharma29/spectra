@@ -20,7 +20,7 @@ export default function CustomersPage() {
   const { data: customers, loading } = useCollection<Customer>('customers');
   const canWrite = useCanWrite();
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ name: '', mobile: '', email: '', city: '', customerType: 'Residential', address: '' });
+  const [form, setForm] = useState({ customerId: '', name: '', mobile: '', email: '', city: '', capacity: '', customerType: 'Residential', address: '' });
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
 
   const columns: Column<Customer>[] = [
@@ -72,12 +72,12 @@ export default function CustomersPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.name || !form.mobile) { toast.error('Name and mobile are required'); return; }
+    if (!form.customerId || !form.name || !form.mobile) { toast.error('Customer ID, name and mobile are required'); return; }
     try {
       await addDocument('customers', form);
       toast.success('Customer added');
       setShowModal(false);
-      setForm({ name: '', mobile: '', email: '', city: '', customerType: 'Residential', address: '' });
+      setForm({ customerId: '', name: '', mobile: '', email: '', city: '', capacity: '', customerType: 'Residential', address: '' });
     } catch (err: any) { toast.error(err?.message || 'Failed to add customer'); }
   };
 
@@ -114,10 +114,12 @@ export default function CustomersPage() {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add Customer">
         <div className="space-y-4">
+          <Input label="Customer ID *" value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })} />
           <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Mobile *" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} />
           <Input label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           <Input label="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+          <Input label="Capacity (kW)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} />
           <Input label="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           <Select label="Type" options={[{ value: 'Residential', label: 'Residential' }, { value: 'Commercial', label: 'Commercial' }]} value={form.customerType} onChange={(e) => setForm({ ...form, customerType: e.target.value })} />
           <div className="flex justify-end gap-2">

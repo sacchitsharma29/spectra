@@ -76,9 +76,11 @@ export default function CustomerDetailPage() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
+                  { label: 'Customer ID', value: customer.customerId || '-' },
                   { label: 'Phone', value: customer.mobile },
                   { label: 'WhatsApp', value: customer.whatsapp || '-' },
                   { label: 'Email', value: customer.email || '-' },
+                  { label: 'Capacity', value: customer.capacity ? `${customer.capacity} kW` : '-' },
                   { label: 'Address', value: customer.address ? `${customer.address}, ${customer.city || ''}, ${customer.state || ''} - ${customer.pincode || ''}` : '-' },
                   { label: 'Aadhaar', value: customer.aadhaar || '-' },
                   { label: 'PAN', value: customer.pan || '-' },

@@ -93,6 +93,7 @@ export interface Customer {
   aadhaar?: string;
   pan?: string;
   electricityBill?: string;
+  capacity?: string;
   customerType: CustomerType;
   leadId?: string;
   createdAt: Date;
