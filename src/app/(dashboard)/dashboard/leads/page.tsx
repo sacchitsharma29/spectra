@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Phone, MapPin } from 'lucide-react';
+import { Plus, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Select } from '@/components/ui/Select';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { orderBy } from 'firebase/firestore';
 import { useCollection } from '@/hooks/useFirestore';
 import { formatDate, getStatusColor, getPriorityColor } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
@@ -20,7 +21,7 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
-  const { data: leads, loading } = useCollection<Lead>('leads');
+  const { data: leads, loading } = useCollection<Lead>('leads', [orderBy('createdAt', 'desc')]);
   const canWrite = useCanWrite();
 
   const columns: Column<Lead>[] = [
@@ -62,14 +63,9 @@ export default function LeadsPage() {
       ),
     },
     {
-      key: 'city',
-      header: 'Location',
-      render: (lead) => (
-        <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-          <MapPin className="w-3 h-3" />
-          {lead.city || '-'}
-        </div>
-      ),
+      key: 'address',
+      header: 'Address',
+      render: (lead) => <span className="text-gray-500 dark:text-gray-400 truncate max-w-[200px] block">{lead.address || '-'}</span>,
     },
     {
       key: 'createdAt',
