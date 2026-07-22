@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Users, UserPlus, FileText, HardHat, CheckCircle2, CreditCard,
-  ArrowUpRight, Calendar, DollarSign,
+  Users, UserPlus, FileText, HardHat, CheckCircle2,
+  ArrowUpRight, Calendar,
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
@@ -13,31 +13,30 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCollection } from '@/hooks/useFirestore';
 import { formatDate, toDate } from '@/lib/utils';
-import { Lead } from '@/types';
+import { Lead, Customer } from '@/types';
 
 export default function DashboardPage() {
   const { userData, firestoreReady } = useAuth();
   const { data: leads, loading: leadsLoading } = useCollection<Lead>('leads');
+  const { data: customers, loading: customersLoading } = useCollection<Customer>('customers');
 
   const totalLeads = leads.length;
+  const totalCustomers = customers.length;
   const newToday = leads.filter((l) => {
     const d = toDate(l.createdAt);
     return d && d.toDateString() === new Date().toDateString();
   }).length;
-  const activeCustomers = leads.filter((l) => l.status === 'Confirmed' || l.status === 'Installed').length;
   const quotationsSent = leads.filter((l) => l.status === 'Quotation Sent').length;
   const projectsInProgress = leads.filter((l) => l.status === 'Site Survey' || l.status === 'Negotiation').length;
   const completedProjects = leads.filter((l) => l.status === 'Installed').length;
 
   const stats = [
     { title: 'Total Leads', value: totalLeads, icon: <UserPlus className="w-6 h-6" />, color: 'blue' as const },
-    { title: 'New Today', value: newToday, icon: <Users className="w-6 h-6" />, color: 'green' as const },
-    { title: 'Active Customers', value: activeCustomers, icon: <Users className="w-6 h-6" />, color: 'purple' as const },
+    { title: 'Total Customers', value: totalCustomers, icon: <Users className="w-6 h-6" />, color: 'green' as const },
+    { title: 'New Today', value: newToday, icon: <Calendar className="w-6 h-6" />, color: 'blue' as const },
     { title: 'Quotations Sent', value: quotationsSent, icon: <FileText className="w-6 h-6" />, color: 'teal' as const },
     { title: 'In Progress', value: projectsInProgress, icon: <HardHat className="w-6 h-6" />, color: 'orange' as const },
     { title: 'Completed', value: completedProjects, icon: <CheckCircle2 className="w-6 h-6" />, color: 'green' as const },
-    { title: 'Pending Payments', value: '₹0', icon: <CreditCard className="w-6 h-6" />, color: 'red' as const },
-    { title: 'Monthly Revenue', value: '₹0', icon: <DollarSign className="w-6 h-6" />, color: 'green' as const },
   ];
 
   const recentLeads = [...leads].slice(0, 5);
@@ -76,8 +75,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {leadsLoading ? (
-        <CardSkeleton count={8} />
+      {leadsLoading || customersLoading ? (
+        <CardSkeleton count={6} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
