@@ -84,11 +84,13 @@ export default function SettingsPage() {
   const [editTarget, setEditTarget] = useState<any>(null);
   const [editRole, setEditRole] = useState('sales_executive');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const headerFileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [headerUploading, setHeaderUploading] = useState(false);
   const [company, setCompany] = useState({
     name: 'Spectra Solar Solutions', email: 'info@spectrasolar.com', phone: '+91 1800-123-4567',
     website: 'www.spectrasolar.com', address: '42, Solar Plaza, Andheri East, Mumbai - 400093',
-    gst: '27ABCDE1234F1Z5', pan: 'ABCDE1234F', logoUrl: '',
+    gst: '27ABCDE1234F1Z5', pan: 'ABCDE1234F', logoUrl: '', headerUrl: '',
   });
   const [companyLoading, setCompanyLoading] = useState(true);
 
@@ -187,6 +189,21 @@ export default function SettingsPage() {
     setUploading(false);
   };
 
+  const handleHeaderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setHeaderUploading(true);
+    try {
+      const storageRef = ref(storage, `headers/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setCompany((prev) => ({ ...prev, headerUrl: url }));
+      await setDoc(doc(db, 'settings', 'company'), { ...company, headerUrl: url });
+      toast.success('Quotation header updated');
+    } catch (err: any) { toast.error(err?.message || 'Upload failed'); }
+    setHeaderUploading(false);
+  };
+
   const defaultTemplates = [
     { id: 'quotation-standard', name: 'Quotation Template - Standard', content: '# Quotation\n\n**Customer:** {{customerName}}\n**Date:** {{date}}\n\n## Items\n{{items}}\n\n**Total:** {{total}}' },
     { id: 'quotation-premium', name: 'Quotation Template - Premium', content: '# Premium Quotation\n\n**Customer:** {{customerName}}\n**Date:** {{date}}\n\n## Items\n{{items}}\n\n**Total:** {{total}}\n**Validity:** 30 days' },
@@ -241,6 +258,32 @@ export default function SettingsPage() {
                   {uploading ? 'Uploading...' : 'Change Logo'}
                 </Button>
                 <p className="text-xs text-gray-500 mt-1">Recommended: 200x200px PNG</p>
+              </div>
+            </div>
+            <div className="mb-6">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Quotation Header</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">This image appears at the top of every generated quotation.</p>
+              <div className="flex items-center gap-4">
+                <div className="w-48 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                  {company.headerUrl ? (
+                    <img src={company.headerUrl} alt="Quotation header" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-xs text-gray-400">No header</span>
+                  )}
+                </div>
+                <div>
+                  <input ref={headerFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleHeaderUpload} />
+                  <Button variant="outline" size="sm" onClick={() => headerFileInputRef.current?.click()} disabled={headerUploading}>
+                    {headerUploading ? 'Uploading...' : 'Upload Header'}
+                  </Button>
+                  {company.headerUrl && (
+                    <Button variant="ghost" size="sm" className="ml-2 text-red-500" onClick={async () => {
+                      setCompany((prev) => ({ ...prev, headerUrl: '' }));
+                      await setDoc(doc(db, 'settings', 'company'), { ...company, headerUrl: '' });
+                      toast.success('Header removed');
+                    }}>Remove</Button>
+                  )}
+                </div>
               </div>
             </div>
             {companyLoading ? (
