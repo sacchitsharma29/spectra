@@ -12,9 +12,9 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { useDocument, useCollection, updateDocument } from '@/hooks/useFirestore';
 import { where } from 'firebase/firestore';
-import { formatDate, formatCurrency } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
-import { Customer, Project, Payment } from '@/types';
+import { Customer, Project } from '@/types';
 import toast from 'react-hot-toast';
 
 export default function CustomerDetailPage() {
@@ -23,7 +23,6 @@ export default function CustomerDetailPage() {
   const customerId = params.id as string;
   const { data: customer, loading: customerLoading } = useDocument<Customer>('customers', customerId);
   const { data: projects } = useCollection<Project>('projects', [where('customerId', '==', customerId)]);
-  const { data: payments } = useCollection<Payment>('payments', [where('customerId', '==', customerId)]);
   const canWrite = useCanWrite();
   const [showEdit, setShowEdit] = useState(false);
   const [editForm, setEditForm] = useState({ customerId: '', name: '', mobile: '', capacity: '', address: '' });
@@ -53,9 +52,6 @@ export default function CustomerDetailPage() {
       </div>
     );
   }
-
-  const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-  const totalPending = 0;
 
   const openEdit = () => {
     setEditForm({
@@ -158,46 +154,6 @@ export default function CustomerDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Payment Summary</h2>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{formatCurrency(totalPaid)}</p>
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">Total Paid</p>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-900/20">
-                <p className="text-3xl font-bold text-red-600 dark:text-red-400">{formatCurrency(totalPending)}</p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">Pending</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Payment History</h2>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {payments.length === 0 ? (
-                <p className="text-sm text-gray-500">No payments yet</p>
-              ) : (
-                payments.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{(p as any).paymentType || p.type || 'Payment'}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(p.paymentDate || p.createdAt)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-green-600">{formatCurrency(p.amount)}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{p.paymentMethod || '-'}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
           {customer.notes && (
             <Card>
               <CardHeader>
