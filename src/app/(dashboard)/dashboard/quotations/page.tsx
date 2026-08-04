@@ -25,6 +25,7 @@ interface CompanySettings {
   address: string; gst: string; pan: string; logoUrl: string; headerUrl: string;
   termsAndConditions?: string;
   paymentDetails?: string;
+  paymentQrUrl?: string;
 }
 
 const DEFAULT_TERMS = [
@@ -165,7 +166,7 @@ export default function QuotationsPage() {
       : [];
 
     return (
-      <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm">
+      <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
@@ -239,10 +240,17 @@ export default function QuotationsPage() {
           {paymentLines.length > 0 && (
             <div className="mt-6 border-t border-gray-200 pt-3">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Payment Details</p>
-              <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5">
-                {paymentLines.map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
+              <div className="flex items-start justify-between gap-6">
+                <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5 flex-1">
+                  {paymentLines.map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                {company?.paymentQrUrl && (
+                  <div className="shrink-0">
+                    <img src={company.paymentQrUrl} alt="Payment QR code" className="w-28 h-28 object-contain border border-gray-300 rounded" />
+                  </div>
+                )}
               </div>
             </div>
           )}

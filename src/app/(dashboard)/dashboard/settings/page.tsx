@@ -85,8 +85,10 @@ export default function SettingsPage() {
   const [editRole, setEditRole] = useState('sales_executive');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const headerFileInputRef = React.useRef<HTMLInputElement>(null);
+  const qrFileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [headerUploading, setHeaderUploading] = useState(false);
+  const [qrUploading, setQrUploading] = useState(false);
   const [company, setCompany] = useState({
     name: 'Spectra Solar Solutions', email: 'info@spectrasolar.com', phone: '+91 1800-123-4567',
     website: 'www.spectrasolar.com', address: '42, Solar Plaza, Andheri East, Mumbai - 400093',
@@ -108,6 +110,7 @@ export default function SettingsPage() {
       'UPI: spectra@hdfcbank',
       'Payment Terms: 50% advance at order confirmation, balance before installation.',
     ].join('\n'),
+    paymentQrUrl: '',
   });
   const [companyLoading, setCompanyLoading] = useState(true);
 
@@ -231,6 +234,19 @@ export default function SettingsPage() {
     setHeaderUploading(false);
   };
 
+  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setQrUploading(true);
+    try {
+      const url = await compressImageToDataUrl(file, 500, 150000);
+      setCompany((prev) => ({ ...prev, paymentQrUrl: url }));
+      await setDoc(doc(db, 'settings', 'company'), { ...company, paymentQrUrl: url });
+      toast.success('Payment QR updated');
+    } catch (err: any) { toast.error(err?.message || 'Upload failed'); }
+    setQrUploading(false);
+  };
+
   const defaultTemplates = [
     { id: 'quotation-standard', name: 'Quotation Template - Standard', content: '# Quotation\n\n**Customer:** {{customerName}}\n**Date:** {{date}}\n\n## Items\n{{items}}\n\n**Total:** {{total}}' },
     { id: 'quotation-premium', name: 'Quotation Template - Premium', content: '# Premium Quotation\n\n**Customer:** {{customerName}}\n**Date:** {{date}}\n\n## Items\n{{items}}\n\n**Total:** {{total}}\n**Validity:** 30 days' },
@@ -345,6 +361,32 @@ export default function SettingsPage() {
                 onChange={(e) => setCompany({ ...company, paymentDetails: e.target.value })}
                 placeholder={'One line per detail. For example:\nBank: HDFC Bank, Andheri East Branch\nAccount Number: 50100234567890\nIFSC: HDFC0001234\nUPI: spectra@hdfcbank\nPayment Terms: 50% advance at order confirmation, balance before installation.'}
               />
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Payment QR Code</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center overflow-hidden">
+                    {company.paymentQrUrl ? (
+                      <img src={company.paymentQrUrl} alt="Payment QR" className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-xs text-gray-400">No QR</span>
+                    )}
+                  </div>
+                  <div>
+                    <input ref={qrFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleQrUpload} />
+                    <Button variant="outline" size="sm" onClick={() => qrFileInputRef.current?.click()} disabled={qrUploading}>
+                      {qrUploading ? 'Uploading...' : 'Upload QR'}
+                    </Button>
+                    {company.paymentQrUrl && (
+                      <Button variant="ghost" size="sm" className="ml-2 text-red-500" onClick={async () => {
+                        setCompany((prev) => ({ ...prev, paymentQrUrl: '' }));
+                        await setDoc(doc(db, 'settings', 'company'), { ...company, paymentQrUrl: '' });
+                        toast.success('QR removed');
+                      }}>Remove</Button>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">Scan your UPI QR from a bank app. Shown next to payment details in the quotation.</p>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
               <div className="flex items-center justify-between mb-2">
