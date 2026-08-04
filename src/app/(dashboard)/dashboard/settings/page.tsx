@@ -91,6 +91,15 @@ export default function SettingsPage() {
     name: 'Spectra Solar Solutions', email: 'info@spectrasolar.com', phone: '+91 1800-123-4567',
     website: 'www.spectrasolar.com', address: '42, Solar Plaza, Andheri East, Mumbai - 400093',
     gst: '27ABCDE1234F1Z5', pan: 'ABCDE1234F', logoUrl: '', headerUrl: '',
+    termsAndConditions: [
+      'This quotation is valid for 30 days from the date of issue.',
+      'All prices are subject to applicable taxes (GST) as per government norms.',
+      'Advance payment of 50% is required to confirm the order.',
+      'Subsidy amount is subject to government scheme eligibility and approval; the final amount may vary.',
+      'Equipment warranty is as per manufacturer terms; workmanship warranty as per company policy.',
+      'Delivery and installation timelines will be communicated after order confirmation.',
+      'In case of any dispute, the jurisdiction will be local courts only.',
+    ].join('\n'),
   });
   const [companyLoading, setCompanyLoading] = useState(true);
 
@@ -145,6 +154,13 @@ export default function SettingsPage() {
       await setDoc(doc(db, 'settings', 'company'), company);
       toast.success('Company settings saved');
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
+  };
+
+  const saveTerms = async () => {
+    try {
+      await setDoc(doc(db, 'settings', 'company'), company);
+      toast.success('Terms & conditions saved');
+    } catch (err: any) { toast.error(err?.message || 'Failed to save terms'); }
   };
 
   const savePermissions = async () => {
@@ -299,6 +315,21 @@ export default function SettingsPage() {
             )}
             <div className="flex justify-end pt-4">
               <Button onClick={saveCompany} icon={<Save className="w-4 h-4" />}>Save Changes</Button>
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Terms & Conditions</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">One term per line. These appear at the bottom of every quotation until changed.</p>
+                </div>
+                <Button onClick={saveTerms} icon={<Save className="w-4 h-4" />}>Save Terms</Button>
+              </div>
+              <textarea
+                className="input-field min-h-[220px] resize-y font-mono text-sm"
+                value={company.termsAndConditions}
+                onChange={(e) => setCompany({ ...company, termsAndConditions: e.target.value })}
+                placeholder={'One term per line. For example:\nThis quotation is valid for 30 days from the date of issue.\nAdvance payment of 50% is required to confirm the order.'}
+              />
             </div>
           </div>
         );

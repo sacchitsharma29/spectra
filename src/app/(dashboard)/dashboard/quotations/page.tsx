@@ -23,7 +23,18 @@ interface Quotation {
 interface CompanySettings {
   name: string; email: string; phone: string; website: string;
   address: string; gst: string; pan: string; logoUrl: string; headerUrl: string;
+  termsAndConditions?: string;
 }
+
+const DEFAULT_TERMS = [
+  'This quotation is valid for 30 days from the date of issue.',
+  'All prices are subject to applicable taxes (GST) as per government norms.',
+  'Advance payment of 50% is required to confirm the order.',
+  'Subsidy amount is subject to government scheme eligibility and approval; the final amount may vary.',
+  'Equipment warranty is as per manufacturer terms; workmanship warranty as per company policy.',
+  'Delivery and installation timelines will be communicated after order confirmation.',
+  'In case of any dispute, the jurisdiction will be local courts only.',
+];
 
 interface QuoteItem {
   description: string;
@@ -146,15 +157,9 @@ export default function QuotationsPage() {
     const docSubsidy = Number(data.subsidy) || 0;
     const docTotal = data.totalAmount !== undefined ? Number(data.totalAmount) : Math.max(0, docSubtotal - docSubsidy);
 
-    const terms = [
-      'This quotation is valid for 30 days from the date of issue.',
-      'All prices are subject to applicable taxes (GST) as per government norms.',
-      'Advance payment of 50% is required to confirm the order.',
-      'Subsidy amount is subject to government scheme eligibility and approval; the final amount may vary.',
-      'Equipment warranty is as per manufacturer terms; workmanship warranty as per company policy.',
-      'Delivery and installation timelines will be communicated after order confirmation.',
-      'In case of any dispute, the jurisdiction will be local courts only.',
-    ];
+    const terms = company?.termsAndConditions?.trim()
+      ? company.termsAndConditions.split('\n').map((s) => s.trim()).filter(Boolean)
+      : DEFAULT_TERMS;
 
     return (
       <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm">
