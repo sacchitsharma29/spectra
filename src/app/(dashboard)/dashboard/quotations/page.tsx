@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Eye, Printer, Trash2, Save, PlusCircle, MinusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -152,6 +152,9 @@ export default function QuotationsPage() {
   };
 
   const QuotationDoc = ({ data }: { data: any }) => {
+    const docRef = useRef<HTMLDivElement>(null);
+    const [compact, setCompact] = useState(false);
+
     const items: QuoteItem[] = data.items || [];
     const docSubtotal = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
     const docSubsidy = Number(data.subsidy) || 0;
@@ -165,10 +168,15 @@ export default function QuotationsPage() {
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
 
-    const compact = items.length > 5;
+    useEffect(() => {
+      const el = docRef.current;
+      if (!el) return;
+      const pageHeightPx = 1122.5; // 297mm in px (A4)
+      setCompact(el.offsetHeight > pageHeightPx);
+    }, [data]);
 
     return (
-      <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
+      <div ref={docRef} className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
