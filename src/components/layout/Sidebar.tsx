@@ -4,11 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Users, UserPlus, CalendarCheck, ClipboardCheck,
-  FileText, HardHat, CreditCard, FileSpreadsheet, HeadphonesIcon,
-  CheckSquare, FolderOpen, Calendar, BarChart3, Settings,
+  LayoutDashboard, Users, UserPlus, CalendarCheck,
+  FileText, FileSpreadsheet, Calendar, BarChart3, Settings,
   Bell, X, Menu, Sun, Moon, LogOut, ChevronLeft, ChevronRight, LifeBuoy,
-  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -19,18 +17,11 @@ import { usePermissions } from '@/lib/permissions';
 
 const menuItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  { label: 'My Dashboard', icon: UserCheck, href: '/dashboard/my-dashboard' },
   { label: 'Leads', icon: UserPlus, href: '/dashboard/leads' },
   { label: 'Customers', icon: Users, href: '/dashboard/customers' },
   { label: 'Follow-ups', icon: CalendarCheck, href: '/dashboard/followups' },
-  { label: 'Surveys', icon: ClipboardCheck, href: '/dashboard/surveys' },
   { label: 'Quotations', icon: FileText, href: '/dashboard/quotations' },
-  { label: 'Projects', icon: HardHat, href: '/dashboard/projects' },
-  { label: 'Payments', icon: CreditCard, href: '/dashboard/payments' },
   { label: 'Invoices', icon: FileSpreadsheet, href: '/dashboard/invoices' },
-  { label: 'Support', icon: HeadphonesIcon, href: '/dashboard/support' },
-  { label: 'Tasks', icon: CheckSquare, href: '/dashboard/tasks' },
-  { label: 'Documents', icon: FolderOpen, href: '/dashboard/documents' },
   { label: 'Calendar', icon: Calendar, href: '/dashboard/calendar' },
   { label: 'Reports', icon: BarChart3, href: '/dashboard/reports' },
   { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
