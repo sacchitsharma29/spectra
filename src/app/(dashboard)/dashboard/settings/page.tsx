@@ -11,8 +11,8 @@ import { Save, Building2, Users, Bell, FileText, Shield, Palette, Plus, ShieldCh
 import { useAuth } from '@/contexts/AuthContext';
 import { useCollection } from '@/hooks/useFirestore';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { compressImageToDataUrl } from '@/lib/image';
 import { getRoleBadgeColor, formatRoleName } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
 import toast from 'react-hot-toast';
@@ -179,9 +179,7 @@ export default function SettingsPage() {
     if (!file) return;
     setUploading(true);
     try {
-      const storageRef = ref(storage, `logos/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = await compressImageToDataUrl(file, 400, 100000);
       setCompany((prev) => ({ ...prev, logoUrl: url }));
       await setDoc(doc(db, 'settings', 'company'), { ...company, logoUrl: url });
       toast.success('Logo updated');
@@ -194,9 +192,7 @@ export default function SettingsPage() {
     if (!file) return;
     setHeaderUploading(true);
     try {
-      const storageRef = ref(storage, `headers/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      const url = await compressImageToDataUrl(file, 1600, 550000);
       setCompany((prev) => ({ ...prev, headerUrl: url }));
       await setDoc(doc(db, 'settings', 'company'), { ...company, headerUrl: url });
       toast.success('Quotation header updated');
