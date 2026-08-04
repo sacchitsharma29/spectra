@@ -204,7 +204,7 @@ export default function QuotationsPage() {
             </div>
           </div>
           <div className={compact ? 'mb-3' : 'mb-5'}>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Bill To</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Customer Details</p>
             <div className={`border border-gray-300 rounded-lg ${compact ? 'p-3' : 'p-4'}`}>
               <p className="text-base font-bold text-gray-900">{data.customerName}</p>
               {data.address && <p className="text-sm text-gray-700 mt-0.5">{data.address}</p>}
