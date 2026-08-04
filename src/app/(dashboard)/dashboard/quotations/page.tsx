@@ -338,7 +338,7 @@ export default function QuotationsPage() {
               {form.items.map((item, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} />
-                  <Input placeholder="Amount (₹)" type="number" value={item.amount} onChange={(e) => updateItem(i, 'amount', e.target.value)} className="w-40" />
+                  <Input placeholder="Amount (₹)" type="number" value={item.amount} onChange={(e) => updateItem(i, 'amount', e.target.value)} className="w-40" onWheel={(e) => e.currentTarget.blur()} />
                   <button onClick={() => removeItem(i)} className="p-2 text-gray-400 hover:text-red-500"><MinusCircle className="w-4 h-4" /></button>
                 </div>
               ))}
@@ -360,7 +360,7 @@ export default function QuotationsPage() {
             </button>
           </div>
           {form.applySubsidy && (
-            <Input label="Subsidy Amount (₹)" type="number" placeholder="0" value={form.subsidy} onChange={(e) => setForm({ ...form, subsidy: e.target.value })} />
+            <Input label="Subsidy Amount (₹)" type="number" placeholder="0" value={form.subsidy} onChange={(e) => setForm({ ...form, subsidy: e.target.value })} onWheel={(e) => e.currentTarget.blur()} />
           )}
           <div className="flex justify-end gap-6 border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-right">
