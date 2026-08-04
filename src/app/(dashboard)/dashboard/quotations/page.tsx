@@ -72,10 +72,8 @@ export default function QuotationsPage() {
   const columns: Column<Quotation>[] = [
     { key: 'quoteId', header: 'Quote #', width: '110px' },
     { key: 'customerName', header: 'Customer' },
-    { key: 'solarCapacity', header: 'Capacity' },
     { key: 'totalAmount', header: 'Amount', render: (q) => <span className="font-semibold">{formatCurrency(q.totalAmount)}</span> },
     { key: 'status', header: 'Status', render: (q) => <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(q.status)}`}>{q.status}</span> },
-    { key: 'version', header: 'Ver' },
     { key: 'createdAt', header: 'Date', render: (q) => <span className="text-gray-500">{formatDate(q.createdAt)}</span> },
     {
       key: 'actions', header: '',
