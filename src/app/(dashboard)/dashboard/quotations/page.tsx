@@ -219,7 +219,7 @@ export default function QuotationsPage() {
               ))}
             </tbody>
           </table>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end print-break-avoid">
             <div className="w-64 space-y-1.5">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
@@ -238,7 +238,7 @@ export default function QuotationsPage() {
             </div>
           </div>
           {paymentLines.length > 0 && (
-            <div className="mt-6 border-t border-gray-200 pt-3">
+            <div className="mt-6 border-t border-gray-200 pt-3 print-break-avoid">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Payment Details</p>
               <div className="flex items-start justify-between gap-6">
                 <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5 flex-1">
@@ -254,7 +254,7 @@ export default function QuotationsPage() {
               </div>
             </div>
           )}
-          <div className="mt-6 border-t border-gray-200 pt-3">
+          <div className="mt-6 border-t border-gray-200 pt-3 print-break-avoid">
             <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Terms & Conditions</p>
             <ol className="text-[11px] leading-relaxed text-gray-600 list-decimal pl-4 space-y-0.5">
               {terms.map((t, i) => (

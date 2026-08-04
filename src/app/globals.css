@@ -130,6 +130,11 @@
     size: A4;
     margin: 0;
   }
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+  }
   body * {
     visibility: hidden;
   }
@@ -142,11 +147,23 @@
     left: 0;
     top: 0;
     width: 210mm;
-    min-height: 297mm;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     padding: 0;
     margin: 0;
     border: none;
     border-radius: 0;
     box-shadow: none;
+    overflow: visible !important;
+  }
+  .print-area table tr,
+  .print-area table tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-break-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
