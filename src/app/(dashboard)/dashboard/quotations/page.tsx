@@ -146,82 +146,102 @@ export default function QuotationsPage() {
     const docSubsidy = Number(data.subsidy) || 0;
     const docTotal = data.totalAmount !== undefined ? Number(data.totalAmount) : Math.max(0, docSubtotal - docSubsidy);
 
+    const terms = [
+      'This quotation is valid for 30 days from the date of issue.',
+      'All prices are subject to applicable taxes (GST) as per government norms.',
+      'Advance payment of 50% is required to confirm the order.',
+      'Subsidy amount is subject to government scheme eligibility and approval; the final amount may vary.',
+      'Equipment warranty is as per manufacturer terms; workmanship warranty as per company policy.',
+      'Delivery and installation timelines will be communicated after order confirmation.',
+      'In case of any dispute, the jurisdiction will be local courts only.',
+    ];
+
     return (
-      <div className="print-area bg-white text-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-8 sm:px-12 py-10 shadow-sm">
+      <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm">
         {company?.headerUrl && (
-          <div className="w-full mb-8 border-b-2 border-gray-900 pb-6">
+          <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
           </div>
         )}
-        {company && !company.headerUrl && (
-          <div className="flex items-start justify-between mb-8 border-b-2 border-gray-900 pb-6">
-            <div>
-              <p className="text-xl font-bold">{company.name}</p>
-              <p className="text-sm text-gray-600 mt-1">{company.address}</p>
-              <p className="text-sm text-gray-600">Phone: {company.phone}</p>
-              {company.email && <p className="text-sm text-gray-600">Email: {company.email}</p>}
-            </div>
-            {company.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />}
-          </div>
-        )}
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold tracking-widest text-gray-900">QUOTATION</h2>
-            <p className="text-sm text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600"><span className="text-gray-500">Date: </span><span className="font-semibold">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
-          </div>
-        </div>
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Bill To</p>
-          <div className="border border-gray-300 rounded-lg p-5">
-            <p className="text-base font-bold text-gray-900">{data.customerName}</p>
-            {data.address && <p className="text-sm text-gray-700 mt-1">{data.address}</p>}
-            {data.phone && <p className="text-sm text-gray-700 mt-1">Phone: {data.phone}</p>}
-          </div>
-        </div>
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-gray-900 text-white">
-              <th className="text-left px-4 py-3 font-medium">#</th>
-              <th className="text-left px-4 py-3 font-medium">Description</th>
-              <th className="text-right px-4 py-3 font-medium">Amount (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, i) => (
-              <tr key={i} className="border-b border-gray-200">
-                <td className="px-4 py-3 text-gray-700">{i + 1}</td>
-                <td className="px-4 py-3">{item.description}</td>
-                <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(item.amount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-6 flex justify-end">
-          <div className="w-72 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Subtotal</span>
-              <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
-            </div>
-            {docSubsidy > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-green-600">Subsidy</span>
-                <span className="text-green-600">- {formatCurrency(docSubsidy)}</span>
+        <div className="px-8 sm:px-12 pt-6 pb-8">
+          {company && !company.headerUrl && (
+            <div className="flex items-start justify-between mb-5 border-b-2 border-gray-900 pb-4">
+              <div>
+                <p className="text-xl font-bold">{company.name}</p>
+                <p className="text-sm text-gray-600 mt-0.5">{company.address}</p>
+                <p className="text-sm text-gray-600">Phone: {company.phone}</p>
+                {company.email && <p className="text-sm text-gray-600">Email: {company.email}</p>}
               </div>
-            )}
-            <div className="flex justify-between border-t-2 border-gray-900 pt-3 text-base font-bold text-gray-900">
-              <span>Total Amount</span>
-              <span>{formatCurrency(docTotal)}</span>
+              {company.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-14 w-auto object-contain" />}
+            </div>
+          )}
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <h2 className="text-2xl font-bold tracking-widest text-gray-900">QUOTATION</h2>
+              <p className="text-xs text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600"><span className="text-gray-500">Date: </span><span className="font-semibold">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
             </div>
           </div>
-        </div>
-        <div className="mt-8 border-t border-gray-200 pt-4 flex flex-wrap justify-between gap-2 text-xs text-gray-500">
-          {company?.gst && <p>GST No: {company.gst}</p>}
-          {company?.pan && <p>PAN: {company.pan}</p>}
-          {company?.website && <p>{company.website}</p>}
-          {company?.email && <p>Email: {company.email}</p>}
+          <div className="mb-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Bill To</p>
+            <div className="border border-gray-300 rounded-lg p-4">
+              <p className="text-base font-bold text-gray-900">{data.customerName}</p>
+              {data.address && <p className="text-sm text-gray-700 mt-0.5">{data.address}</p>}
+              {data.phone && <p className="text-sm text-gray-700 mt-0.5">Phone: {data.phone}</p>}
+            </div>
+          </div>
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-900 text-white">
+                <th className="text-left px-3 py-2 font-medium">#</th>
+                <th className="text-left px-3 py-2 font-medium">Description</th>
+                <th className="text-right px-3 py-2 font-medium">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, i) => (
+                <tr key={i} className="border-b border-gray-200">
+                  <td className="px-3 py-2 text-gray-700">{i + 1}</td>
+                  <td className="px-3 py-2">{item.description}</td>
+                  <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(item.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-4 flex justify-end">
+            <div className="w-64 space-y-1.5">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
+              </div>
+              {docSubsidy > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-green-600">Subsidy</span>
+                  <span className="text-green-600">- {formatCurrency(docSubsidy)}</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t-2 border-gray-900 pt-2 text-base font-bold text-gray-900">
+                <span>Total Amount</span>
+                <span>{formatCurrency(docTotal)}</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 border-t border-gray-200 pt-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Terms & Conditions</p>
+            <ol className="text-[11px] leading-relaxed text-gray-600 list-decimal pl-4 space-y-0.5">
+              {terms.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ol>
+          </div>
+          <div className="mt-5 border-t border-gray-200 pt-2 flex flex-wrap justify-between gap-2 text-[11px] text-gray-500">
+            {company?.gst && <p>GST No: {company.gst}</p>}
+            {company?.pan && <p>PAN: {company.pan}</p>}
+            {company?.website && <p>{company.website}</p>}
+            {company?.email && <p>Email: {company.email}</p>}
+          </div>
         </div>
       </div>
     );
