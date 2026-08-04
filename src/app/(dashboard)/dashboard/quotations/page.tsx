@@ -170,8 +170,8 @@ export default function QuotationsPage() {
     return (
       <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
-          <div className={`w-full overflow-hidden ${compact ? 'max-h-[30mm]' : 'max-h-[50mm]'}`}>
-            <img src={company.headerUrl} alt="Company header" className="w-full h-full object-contain" />
+          <div className="w-full leading-[0]">
+            <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
           </div>
         )}
         <div className={compact ? 'px-6 sm:px-8 pt-3 pb-6' : 'px-8 sm:px-12 pt-6 pb-8'}>
