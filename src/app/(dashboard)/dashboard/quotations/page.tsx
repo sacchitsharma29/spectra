@@ -248,17 +248,29 @@ export default function QuotationsPage() {
             </div>
           </div>
           {paymentLines.length > 0 && (
-            <div className={`border-t border-gray-200 pt-3 print-break-avoid ${compact ? 'mt-4' : 'mt-6'}`}>
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Payment Details</p>
-              <div className="flex items-start justify-between gap-6">
-                <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5 flex-1">
-                  {paymentLines.map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
+            <div className={`border rounded-lg overflow-hidden print-break-avoid ${compact ? 'mt-4' : 'mt-6'}`}>
+              <div className="bg-gray-900 px-4 py-2 flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-wider text-white">Payment Details</p>
+                <p className="text-[10px] text-gray-300 font-medium">Pay securely via UPI / Bank Transfer</p>
+              </div>
+              <div className={`flex items-center gap-6 ${compact ? 'p-3' : 'p-4'}`}>
+                <div className="flex-1 grid grid-cols-1 gap-1">
+                  {paymentLines.map((line, i) => {
+                    const idx = line.indexOf(':');
+                    const label = idx > -1 ? line.slice(0, idx).trim() : '';
+                    const value = idx > -1 ? line.slice(idx + 1).trim() : line;
+                    return (
+                      <div key={i} className="flex gap-2 text-[11px] leading-snug">
+                        {label && <span className="font-bold text-gray-900 w-28 shrink-0">{label}:</span>}
+                        <span className="text-gray-700">{value}</span>
+                      </div>
+                    );
+                  })}
                 </div>
                 {company?.paymentQrUrl && (
-                  <div className="shrink-0">
-                    <img src={company.paymentQrUrl} alt="Payment QR code" className={`object-contain border border-gray-300 rounded ${compact ? 'w-20 h-20' : 'w-28 h-28'}`} />
+                  <div className="shrink-0 flex flex-col items-center gap-1.5 border border-gray-300 rounded-lg p-2.5 bg-gray-50">
+                    <img src={company.paymentQrUrl} alt="Payment QR code" className={`object-contain ${compact ? 'w-20 h-20' : 'w-28 h-28'}`} />
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Scan to Pay</p>
                   </div>
                 )}
               </div>

@@ -156,6 +156,8 @@
     border-radius: 0;
     box-shadow: none;
     overflow: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .print-area table tr,
   .print-area table tbody tr {
