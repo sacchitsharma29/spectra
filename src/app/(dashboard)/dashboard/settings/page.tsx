@@ -100,6 +100,14 @@ export default function SettingsPage() {
       'Delivery and installation timelines will be communicated after order confirmation.',
       'In case of any dispute, the jurisdiction will be local courts only.',
     ].join('\n'),
+    paymentDetails: [
+      'Bank: HDFC Bank, Andheri East Branch',
+      'Account Name: Spectra Solar Solutions',
+      'Account Number: 50100234567890',
+      'IFSC: HDFC0001234',
+      'UPI: spectra@hdfcbank',
+      'Payment Terms: 50% advance at order confirmation, balance before installation.',
+    ].join('\n'),
   });
   const [companyLoading, setCompanyLoading] = useState(true);
 
@@ -161,6 +169,13 @@ export default function SettingsPage() {
       await setDoc(doc(db, 'settings', 'company'), company);
       toast.success('Terms & conditions saved');
     } catch (err: any) { toast.error(err?.message || 'Failed to save terms'); }
+  };
+
+  const savePaymentDetails = async () => {
+    try {
+      await setDoc(doc(db, 'settings', 'company'), company);
+      toast.success('Payment details saved');
+    } catch (err: any) { toast.error(err?.message || 'Failed to save payment details'); }
   };
 
   const savePermissions = async () => {
@@ -315,6 +330,21 @@ export default function SettingsPage() {
             )}
             <div className="flex justify-end pt-4">
               <Button onClick={saveCompany} icon={<Save className="w-4 h-4" />}>Save Changes</Button>
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Payment Details</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">One line per detail. These appear just above the terms in every quotation until changed.</p>
+                </div>
+                <Button onClick={savePaymentDetails} icon={<Save className="w-4 h-4" />}>Save Payment Details</Button>
+              </div>
+              <textarea
+                className="input-field min-h-[180px] resize-y font-mono text-sm"
+                value={company.paymentDetails}
+                onChange={(e) => setCompany({ ...company, paymentDetails: e.target.value })}
+                placeholder={'One line per detail. For example:\nBank: HDFC Bank, Andheri East Branch\nAccount Number: 50100234567890\nIFSC: HDFC0001234\nUPI: spectra@hdfcbank\nPayment Terms: 50% advance at order confirmation, balance before installation.'}
+              />
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
               <div className="flex items-center justify-between mb-2">

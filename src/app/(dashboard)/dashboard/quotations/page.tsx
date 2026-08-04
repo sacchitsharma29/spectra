@@ -24,6 +24,7 @@ interface CompanySettings {
   name: string; email: string; phone: string; website: string;
   address: string; gst: string; pan: string; logoUrl: string; headerUrl: string;
   termsAndConditions?: string;
+  paymentDetails?: string;
 }
 
 const DEFAULT_TERMS = [
@@ -159,6 +160,10 @@ export default function QuotationsPage() {
       ? company.termsAndConditions.split('\n').map((s) => s.trim()).filter(Boolean)
       : DEFAULT_TERMS;
 
+    const paymentLines = company?.paymentDetails?.trim()
+      ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
+      : [];
+
     return (
       <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm">
         {company?.headerUrl && (
@@ -231,6 +236,16 @@ export default function QuotationsPage() {
               </div>
             </div>
           </div>
+          {paymentLines.length > 0 && (
+            <div className="mt-6 border-t border-gray-200 pt-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Payment Details</p>
+              <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5">
+                {paymentLines.map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-6 border-t border-gray-200 pt-3">
             <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Terms & Conditions</p>
             <ol className="text-[11px] leading-relaxed text-gray-600 list-decimal pl-4 space-y-0.5">
@@ -239,11 +254,9 @@ export default function QuotationsPage() {
               ))}
             </ol>
           </div>
-          <div className="mt-5 border-t border-gray-200 pt-2 flex flex-wrap justify-between gap-2 text-[11px] text-gray-500">
+          <div className="mt-5 border-t border-gray-200 pt-2 flex flex-wrap gap-2 text-[11px] text-gray-500">
             {company?.gst && <p>GST No: {company.gst}</p>}
             {company?.pan && <p>PAN: {company.pan}</p>}
-            {company?.website && <p>{company.website}</p>}
-            {company?.email && <p>Email: {company.email}</p>}
           </div>
         </div>
       </div>
