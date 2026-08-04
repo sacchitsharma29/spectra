@@ -43,6 +43,8 @@ export default function QuotationsPage() {
     address: '',
     phone: '',
     date: new Date().toISOString().slice(0, 10),
+    applySubsidy: false,
+    subsidy: '',
     items: [{ description: '', amount: '' }] as { description: string; amount: string }[],
   });
 
@@ -85,7 +87,9 @@ export default function QuotationsPage() {
     } catch (err: any) { toast.error(err?.message || 'Failed to delete'); }
   };
 
-  const totalAmount = form.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const subtotal = form.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const subsidyAmount = form.applySubsidy ? (Number(form.subsidy) || 0) : 0;
+  const netTotal = Math.max(0, subtotal - subsidyAmount);
 
   const updateItem = (index: number, field: 'description' | 'amount', value: string) => {
     const updated = [...form.items];
@@ -104,12 +108,15 @@ export default function QuotationsPage() {
     const validItems = form.items.filter((i) => i.description.trim() || Number(i.amount) > 0);
     if (validItems.length === 0) { toast.error('Add at least one item'); return; }
     const quote = {
+      quoteId: `QT-${String(quotations.length + 1).padStart(3, '0')}`,
       customerName: form.customerName,
       address: form.address,
       phone: form.phone,
       date: form.date,
       items: validItems.map((i) => ({ description: i.description.trim(), amount: Number(i.amount) || 0 })),
-      totalAmount,
+      subtotal,
+      subsidy: subsidyAmount,
+      totalAmount: netTotal,
     };
     setPreview(quote);
   };
@@ -128,73 +135,97 @@ export default function QuotationsPage() {
       toast.success('Quotation saved');
       setPreview(null);
       setShowModal(false);
-      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), items: [{ description: '', amount: '' }] });
+      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', items: [{ description: '', amount: '' }] });
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
     setSaving(false);
   };
 
-  const QuotationDoc = ({ data }: { data: any }) => (
-    <div className="print-area bg-white text-gray-900">
-      {company?.headerUrl && (
-        <div className="w-full mb-6 border-b border-gray-300 pb-4">
-          <img src={company.headerUrl} alt="Company header" className="w-full object-contain max-h-32" />
-        </div>
-      )}
-      {company && !company.headerUrl && (
-        <div className="flex items-center justify-between mb-6 border-b border-gray-300 pb-4">
-          <div>
-            <p className="text-xl font-bold">{company.name}</p>
-            <p className="text-sm text-gray-600">{company.address}</p>
-            <p className="text-sm text-gray-600">Phone: {company.phone} | Email: {company.email}</p>
+  const QuotationDoc = ({ data }: { data: any }) => {
+    const items: QuoteItem[] = data.items || [];
+    const docSubtotal = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const docSubsidy = Number(data.subsidy) || 0;
+    const docTotal = data.totalAmount !== undefined ? Number(data.totalAmount) : Math.max(0, docSubtotal - docSubsidy);
+
+    return (
+      <div className="print-area bg-white text-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-8 sm:px-12 py-10 shadow-sm">
+        {company?.headerUrl && (
+          <div className="w-full mb-8 border-b-2 border-gray-900 pb-6">
+            <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
           </div>
-          {company.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-14 object-contain" />}
+        )}
+        {company && !company.headerUrl && (
+          <div className="flex items-start justify-between mb-8 border-b-2 border-gray-900 pb-6">
+            <div>
+              <p className="text-xl font-bold">{company.name}</p>
+              <p className="text-sm text-gray-600 mt-1">{company.address}</p>
+              <p className="text-sm text-gray-600">Phone: {company.phone}</p>
+              {company.email && <p className="text-sm text-gray-600">Email: {company.email}</p>}
+            </div>
+            {company.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />}
+          </div>
+        )}
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-bold tracking-widest text-gray-900">QUOTATION</h2>
+            <p className="text-sm text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600"><span className="text-gray-500">Date: </span><span className="font-semibold">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
+          </div>
         </div>
-      )}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-wide">QUOTATION</h2>
-          <p className="text-sm text-gray-500 mt-1">{data.quoteId || 'New Quotation'}</p>
+        <div className="mb-8">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Bill To</p>
+          <div className="border border-gray-300 rounded-lg p-5">
+            <p className="text-base font-bold text-gray-900">{data.customerName}</p>
+            {data.address && <p className="text-sm text-gray-700 mt-1">{data.address}</p>}
+            {data.phone && <p className="text-sm text-gray-700 mt-1">Phone: {data.phone}</p>}
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm"><span className="text-gray-500">Date:</span> <span className="font-medium">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
-        </div>
-      </div>
-      <div className="mb-6 p-4 rounded-lg bg-gray-50">
-        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Customer Details</p>
-        <p className="text-base font-semibold">{data.customerName}</p>
-        {data.address && <p className="text-sm text-gray-700 mt-0.5">{data.address}</p>}
-        {data.phone && <p className="text-sm text-gray-700 mt-0.5">Phone: {data.phone}</p>}
-      </div>
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="bg-gray-900 text-white">
-            <th className="text-left px-3 py-2">#</th>
-            <th className="text-left px-3 py-2">Description</th>
-            <th className="text-right px-3 py-2">Amount (₹)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data.items || []).map((item: QuoteItem, i: number) => (
-            <tr key={i} className="border-b border-gray-200">
-              <td className="px-3 py-2">{i + 1}</td>
-              <td className="px-3 py-2">{item.description}</td>
-              <td className="px-3 py-2 text-right">{formatCurrency(item.amount)}</td>
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-gray-900 text-white">
+              <th className="text-left px-4 py-3 font-medium">#</th>
+              <th className="text-left px-4 py-3 font-medium">Description</th>
+              <th className="text-right px-4 py-3 font-medium">Amount (₹)</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td className="px-3 py-2" colSpan={2}></td>
-            <td className="px-3 py-2 text-right">
-              <span className="text-sm text-gray-500">Total: </span>
-              <span className="text-lg font-bold">{formatCurrency(data.totalAmount)}</span>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-      {company?.gst && <p className="text-xs text-gray-500 mt-4">GST No: {company.gst}</p>}
-    </div>
-  );
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={i} className="border-b border-gray-200">
+                <td className="px-4 py-3 text-gray-700">{i + 1}</td>
+                <td className="px-4 py-3">{item.description}</td>
+                <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(item.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="mt-6 flex justify-end">
+          <div className="w-72 space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Subtotal</span>
+              <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
+            </div>
+            {docSubsidy > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-600">Subsidy</span>
+                <span className="text-green-600">- {formatCurrency(docSubsidy)}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-t-2 border-gray-900 pt-3 text-base font-bold text-gray-900">
+              <span>Total Amount</span>
+              <span>{formatCurrency(docTotal)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-8 border-t border-gray-200 pt-4 flex flex-wrap justify-between gap-2 text-xs text-gray-500">
+          {company?.gst && <p>GST No: {company.gst}</p>}
+          {company?.pan && <p>PAN: {company.pan}</p>}
+          {company?.website && <p>{company.website}</p>}
+          {company?.email && <p>Email: {company.email}</p>}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -246,8 +277,39 @@ export default function QuotationsPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-end mt-3">
-              <p className="text-sm text-gray-500">Total: <span className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatCurrency(totalAmount)}</span></p>
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Apply Subsidy</p>
+              <p className="text-xs text-gray-500 mt-0.5">Deduct an amount from the total (e.g. government subsidy)</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.applySubsidy}
+              onClick={() => setForm({ ...form, applySubsidy: !form.applySubsidy })}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${form.applySubsidy ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${form.applySubsidy ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          {form.applySubsidy && (
+            <Input label="Subsidy Amount (₹)" type="number" placeholder="0" value={form.subsidy} onChange={(e) => setForm({ ...form, subsidy: e.target.value })} />
+          )}
+          <div className="flex justify-end gap-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Subtotal</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(subtotal)}</p>
+            </div>
+            {form.applySubsidy && (
+              <div className="text-right">
+                <p className="text-xs text-gray-500">Subsidy</p>
+                <p className="text-sm font-semibold text-green-600">- {formatCurrency(subsidyAmount)}</p>
+              </div>
+            )}
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Net Total</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatCurrency(netTotal)}</p>
             </div>
           </div>
           <div className="flex justify-end gap-2">
