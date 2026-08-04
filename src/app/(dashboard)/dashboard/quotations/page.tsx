@@ -165,18 +165,20 @@ export default function QuotationsPage() {
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
 
+    const compact = items.length > 5;
+
     return (
       <div className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
-          <div className="w-full leading-[0]">
-            <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
+          <div className={`w-full overflow-hidden ${compact ? 'max-h-[30mm]' : 'max-h-[50mm]'}`}>
+            <img src={company.headerUrl} alt="Company header" className="w-full h-full object-contain" />
           </div>
         )}
-        <div className="px-8 sm:px-12 pt-6 pb-8">
+        <div className={compact ? 'px-6 sm:px-8 pt-3 pb-6' : 'px-8 sm:px-12 pt-6 pb-8'}>
           {company && !company.headerUrl && (
-            <div className="flex items-start justify-between mb-5 border-b-2 border-gray-900 pb-4">
+            <div className={`flex items-start justify-between border-b-2 border-gray-900 pb-4 ${compact ? 'mb-3' : 'mb-5'}`}>
               <div>
-                <p className="text-xl font-bold">{company.name}</p>
+                <p className={`font-bold ${compact ? 'text-lg' : 'text-xl'}`}>{company.name}</p>
                 <p className="text-sm text-gray-600 mt-0.5">{company.address}</p>
                 <p className="text-sm text-gray-600">Phone: {company.phone}</p>
                 {company.email && <p className="text-sm text-gray-600">Email: {company.email}</p>}
@@ -184,43 +186,43 @@ export default function QuotationsPage() {
               {company.logoUrl && <img src={company.logoUrl} alt="Logo" className="h-14 w-auto object-contain" />}
             </div>
           )}
-          <div className="flex items-start justify-between mb-5">
+          <div className={`flex items-start justify-between ${compact ? 'mb-3' : 'mb-5'}`}>
             <div>
-              <h2 className="text-2xl font-bold tracking-widest text-gray-900">QUOTATION</h2>
+              <h2 className={`font-bold tracking-widest text-gray-900 ${compact ? 'text-lg' : 'text-2xl'}`}>QUOTATION</h2>
               <p className="text-xs text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600"><span className="text-gray-500">Date: </span><span className="font-semibold">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
             </div>
           </div>
-          <div className="mb-5">
+          <div className={compact ? 'mb-3' : 'mb-5'}>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Bill To</p>
-            <div className="border border-gray-300 rounded-lg p-4">
+            <div className={`border border-gray-300 rounded-lg ${compact ? 'p-3' : 'p-4'}`}>
               <p className="text-base font-bold text-gray-900">{data.customerName}</p>
               {data.address && <p className="text-sm text-gray-700 mt-0.5">{data.address}</p>}
               {data.phone && <p className="text-sm text-gray-700 mt-0.5">Phone: {data.phone}</p>}
             </div>
           </div>
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-900 text-white">
-                <th className="text-left px-3 py-2 font-medium">#</th>
-                <th className="text-left px-3 py-2 font-medium">Description</th>
-                <th className="text-right px-3 py-2 font-medium">Amount (₹)</th>
+                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>#</th>
+                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Description</th>
+                <th className={`text-right font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, i) => (
                 <tr key={i} className="border-b border-gray-200">
-                  <td className="px-3 py-2 text-gray-700">{i + 1}</td>
-                  <td className="px-3 py-2">{item.description}</td>
-                  <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(item.amount)}</td>
+                  <td className={`text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{i + 1}</td>
+                  <td className={`${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.description}</td>
+                  <td className={`text-right text-gray-900 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{formatCurrency(item.amount)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="mt-4 flex justify-end print-break-avoid">
-            <div className="w-64 space-y-1.5">
+          <div className={`flex justify-end print-break-avoid ${compact ? 'mt-3' : 'mt-4'}`}>
+            <div className={compact ? 'w-60 space-y-1' : 'w-64 space-y-1.5'}>
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
                 <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
@@ -238,7 +240,7 @@ export default function QuotationsPage() {
             </div>
           </div>
           {paymentLines.length > 0 && (
-            <div className="mt-6 border-t border-gray-200 pt-3 print-break-avoid">
+            <div className={`border-t border-gray-200 pt-3 print-break-avoid ${compact ? 'mt-4' : 'mt-6'}`}>
               <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Payment Details</p>
               <div className="flex items-start justify-between gap-6">
                 <div className="text-[11px] leading-relaxed text-gray-600 space-y-0.5 flex-1">
@@ -248,21 +250,21 @@ export default function QuotationsPage() {
                 </div>
                 {company?.paymentQrUrl && (
                   <div className="shrink-0">
-                    <img src={company.paymentQrUrl} alt="Payment QR code" className="w-28 h-28 object-contain border border-gray-300 rounded" />
+                    <img src={company.paymentQrUrl} alt="Payment QR code" className={`object-contain border border-gray-300 rounded ${compact ? 'w-20 h-20' : 'w-28 h-28'}`} />
                   </div>
                 )}
               </div>
             </div>
           )}
-          <div className="mt-6 border-t border-gray-200 pt-3 print-break-avoid">
+          <div className={`border-t border-gray-200 pt-3 print-break-avoid ${compact ? 'mt-4' : 'mt-6'}`}>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Terms & Conditions</p>
-            <ol className="text-[11px] leading-relaxed text-gray-600 list-decimal pl-4 space-y-0.5">
+            <ol className={`leading-relaxed text-gray-600 list-decimal pl-4 space-y-0.5 ${compact ? 'text-[10px]' : 'text-[11px]'}`}>
               {terms.map((t, i) => (
                 <li key={i}>{t}</li>
               ))}
             </ol>
           </div>
-          <div className="mt-5 border-t border-gray-200 pt-2 flex flex-wrap gap-2 text-[11px] text-gray-500">
+          <div className={`border-t border-gray-200 pt-2 flex flex-wrap gap-2 text-[11px] text-gray-500 ${compact ? 'mt-4' : 'mt-5'}`}>
             {company?.gst && <p>GST No: {company.gst}</p>}
             {company?.pan && <p>PAN: {company.pan}</p>}
           </div>
