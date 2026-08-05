@@ -41,8 +41,7 @@ const DEFAULT_TERMS = [
 interface QuoteItem {
   description: string;
   quantity?: number;
-  rate?: number;
-  amount: number;
+  amount?: number;
 }
 
 export default function QuotationsPage() {
@@ -60,7 +59,8 @@ export default function QuotationsPage() {
     date: new Date().toISOString().slice(0, 10),
     applySubsidy: false,
     subsidy: '',
-    items: [{ description: '', quantity: '1', rate: '' }] as { description: string; quantity: string; rate: string }[],
+    totalAmount: '',
+    items: [{ description: '', quantity: '1' }] as { description: string; quantity: string }[],
   });
 
   useEffect(() => {
@@ -100,17 +100,17 @@ export default function QuotationsPage() {
     } catch (err: any) { toast.error(err?.message || 'Failed to delete'); }
   };
 
-  const subtotal = form.items.reduce((sum, item) => sum + (Number(item.quantity) || 1) * (Number(item.rate) || 0), 0);
+  const totalAmount = Number(form.totalAmount) || 0;
   const subsidyAmount = form.applySubsidy ? (Number(form.subsidy) || 0) : 0;
-  const netTotal = Math.max(0, subtotal - subsidyAmount);
+  const netTotal = Math.max(0, totalAmount - subsidyAmount);
 
-  const updateItem = (index: number, field: 'description' | 'quantity' | 'rate', value: string) => {
+  const updateItem = (index: number, field: 'description' | 'quantity', value: string) => {
     const updated = [...form.items];
     updated[index] = { ...updated[index], [field]: value };
     setForm({ ...form, items: updated });
   };
 
-  const addItem = () => setForm({ ...form, items: [...form.items, { description: '', quantity: '1', rate: '' }] });
+  const addItem = () => setForm({ ...form, items: [...form.items, { description: '', quantity: '1' }] });
   const removeItem = (index: number) => {
     const updated = form.items.filter((_, i) => i !== index);
     setForm({ ...form, items: updated });
@@ -120,18 +120,18 @@ export default function QuotationsPage() {
     if (!form.customerName) { toast.error('Customer name is required'); return; }
     const validItems = form.items.filter((i) => i.description.trim());
     if (validItems.length === 0) { toast.error('Add at least one item'); return; }
+    if (totalAmount <= 0) { toast.error('Enter the total amount'); return; }
     const quote = {
       quoteId: `QT-${String(quotations.length + 1).padStart(3, '0')}`,
       customerName: form.customerName,
       address: form.address,
       phone: form.phone,
       date: form.date,
-      items: validItems.map((i) => {
-        const quantity = Number(i.quantity) > 0 ? Number(i.quantity) : 1;
-        const rate = i.rate.trim() ? Number(i.rate) : 0;
-        return { description: i.description.trim(), quantity, rate, amount: quantity * rate };
-      }),
-      subtotal,
+      items: validItems.map((i) => ({
+        description: i.description.trim(),
+        quantity: Number(i.quantity) > 0 ? Number(i.quantity) : 1,
+      })),
+      subtotal: totalAmount,
       subsidy: subsidyAmount,
       totalAmount: netTotal,
     };
@@ -152,7 +152,7 @@ export default function QuotationsPage() {
       toast.success('Quotation saved');
       setPreview(null);
       setShowModal(false);
-      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', items: [{ description: '', quantity: '1', rate: '' }] });
+      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', quantity: '1' }] });
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
     setSaving(false);
   };
@@ -162,7 +162,7 @@ export default function QuotationsPage() {
     const [compact, setCompact] = useState(false);
 
     const items: QuoteItem[] = data.items || [];
-    const docSubtotal = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const docSubtotal = data.subtotal !== undefined ? Number(data.subtotal) : items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
     const docSubsidy = Number(data.subsidy) || 0;
     const docTotal = data.totalAmount !== undefined ? Number(data.totalAmount) : Math.max(0, docSubtotal - docSubsidy);
 
@@ -223,8 +223,6 @@ export default function QuotationsPage() {
                 <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>#</th>
                 <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Description</th>
                 <th className={`text-center font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Qty</th>
-                <th className={`text-right font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Rate (₹)</th>
-                <th className={`text-right font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
@@ -233,18 +231,18 @@ export default function QuotationsPage() {
                   <td className={`text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{i + 1}</td>
                   <td className={`${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.description}</td>
                   <td className={`text-center text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.quantity ?? '—'}</td>
-                  <td className={`text-right text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.rate ? formatCurrency(item.rate) : '—'}</td>
-                  <td className={`text-right text-gray-900 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.amount > 0 ? formatCurrency(item.amount) : '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           <div className={`flex justify-end print-break-avoid ${compact ? 'mt-3' : 'mt-4'}`}>
             <div className={compact ? 'w-60 space-y-1' : 'w-64 space-y-1.5'}>
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Subtotal</span>
-                <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
-              </div>
+              {docSubsidy > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Total</span>
+                  <span className="text-gray-900">{formatCurrency(docSubtotal)}</span>
+                </div>
+              )}
               {docSubsidy > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-green-600">Subsidy</span>
@@ -344,18 +342,18 @@ export default function QuotationsPage() {
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Items</p>
               <Button variant="outline" size="sm" onClick={addItem} icon={<PlusCircle className="w-4 h-4" />}>Add Item</Button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Rate is optional — leave it blank for free or included items.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Add the items and their quantities. Enter the final total amount at the bottom.</p>
             <div className="space-y-2">
               {form.items.map((item, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} />
                   <Input placeholder="Qty" type="number" min="1" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', e.target.value)} className="w-20" onWheel={(e) => e.currentTarget.blur()} />
-                  <Input placeholder="Rate (₹)" type="number" value={item.rate} onChange={(e) => updateItem(i, 'rate', e.target.value)} className="w-32" onWheel={(e) => e.currentTarget.blur()} />
                   <button onClick={() => removeItem(i)} className="p-2 text-gray-400 hover:text-red-500"><MinusCircle className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
           </div>
+          <Input label="Total Amount (₹) *" type="number" placeholder="0" value={form.totalAmount} onChange={(e) => setForm({ ...form, totalAmount: e.target.value })} onWheel={(e) => e.currentTarget.blur()} />
           <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Apply Subsidy</p>
@@ -375,10 +373,12 @@ export default function QuotationsPage() {
             <Input label="Subsidy Amount (₹)" type="number" placeholder="0" value={form.subsidy} onChange={(e) => setForm({ ...form, subsidy: e.target.value })} onWheel={(e) => e.currentTarget.blur()} />
           )}
           <div className="flex justify-end gap-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-            <div className="text-right">
-              <p className="text-xs text-gray-500">Subtotal</p>
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(subtotal)}</p>
-            </div>
+            {form.applySubsidy && (
+              <div className="text-right">
+                <p className="text-xs text-gray-500">Total</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(totalAmount)}</p>
+              </div>
+            )}
             {form.applySubsidy && (
               <div className="text-right">
                 <p className="text-xs text-gray-500">Subsidy</p>
@@ -386,7 +386,7 @@ export default function QuotationsPage() {
               </div>
             )}
             <div className="text-right">
-              <p className="text-xs text-gray-500">Net Total</p>
+              <p className="text-xs text-gray-500">{form.applySubsidy ? 'Net Total' : 'Total Amount'}</p>
               <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatCurrency(netTotal)}</p>
             </div>
           </div>
