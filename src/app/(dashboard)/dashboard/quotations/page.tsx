@@ -40,6 +40,7 @@ const DEFAULT_TERMS = [
 
 interface QuoteItem {
   description: string;
+  brand?: string;
   quantity?: number;
   amount?: number;
 }
@@ -60,7 +61,7 @@ export default function QuotationsPage() {
     applySubsidy: false,
     subsidy: '',
     totalAmount: '',
-    items: [{ description: '', quantity: '1' }] as { description: string; quantity: string }[],
+    items: [{ description: '', brand: '', quantity: '1' }] as { description: string; brand: string; quantity: string }[],
   });
 
   useEffect(() => {
@@ -104,13 +105,13 @@ export default function QuotationsPage() {
   const subsidyAmount = form.applySubsidy ? (Number(form.subsidy) || 0) : 0;
   const netTotal = Math.max(0, totalAmount - subsidyAmount);
 
-  const updateItem = (index: number, field: 'description' | 'quantity', value: string) => {
+  const updateItem = (index: number, field: 'description' | 'brand' | 'quantity', value: string) => {
     const updated = [...form.items];
     updated[index] = { ...updated[index], [field]: value };
     setForm({ ...form, items: updated });
   };
 
-  const addItem = () => setForm({ ...form, items: [...form.items, { description: '', quantity: '1' }] });
+  const addItem = () => setForm({ ...form, items: [...form.items, { description: '', brand: '', quantity: '1' }] });
   const removeItem = (index: number) => {
     const updated = form.items.filter((_, i) => i !== index);
     setForm({ ...form, items: updated });
@@ -129,6 +130,7 @@ export default function QuotationsPage() {
       date: form.date,
       items: validItems.map((i) => ({
         description: i.description.trim(),
+        brand: i.brand.trim(),
         quantity: Number(i.quantity) > 0 ? Number(i.quantity) : 1,
       })),
       subtotal: totalAmount,
@@ -152,7 +154,7 @@ export default function QuotationsPage() {
       toast.success('Quotation saved');
       setPreview(null);
       setShowModal(false);
-      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', quantity: '1' }] });
+      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', brand: '', quantity: '1' }] });
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
     setSaving(false);
   };
@@ -220,8 +222,9 @@ export default function QuotationsPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-900 text-white">
-                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>#</th>
-                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Description</th>
+                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>S.No</th>
+                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Items</th>
+                <th className={`text-left font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Brand</th>
                 <th className={`text-center font-medium ${compact ? 'px-2 py-1.5 text-[13px]' : 'px-3 py-2 text-sm'}`}>Qty</th>
               </tr>
             </thead>
@@ -230,6 +233,7 @@ export default function QuotationsPage() {
                 <tr key={i} className="border-b border-gray-200">
                   <td className={`text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{i + 1}</td>
                   <td className={`${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.description}</td>
+                  <td className={`text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.brand || '—'}</td>
                   <td className={`text-center text-gray-700 ${compact ? 'px-2 py-1 text-[13px]' : 'px-3 py-2 text-sm'}`}>{item.quantity ?? '—'}</td>
                 </tr>
               ))}
@@ -342,11 +346,12 @@ export default function QuotationsPage() {
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Items</p>
               <Button variant="outline" size="sm" onClick={addItem} icon={<PlusCircle className="w-4 h-4" />}>Add Item</Button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Add the items and their quantities. Enter the final total amount at the bottom.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Add the items, brand and quantities. Enter the final total amount at the bottom.</p>
             <div className="space-y-2">
               {form.items.map((item, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <Input placeholder="Description" value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} />
+                  <Input placeholder="Item" value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} />
+                  <Input placeholder="Brand" value={item.brand} onChange={(e) => updateItem(i, 'brand', e.target.value)} className="w-40" />
                   <Input placeholder="Qty" type="number" min="1" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', e.target.value)} className="w-20" onWheel={(e) => e.currentTarget.blur()} />
                   <button onClick={() => removeItem(i)} className="p-2 text-gray-400 hover:text-red-500"><MinusCircle className="w-4 h-4" /></button>
                 </div>
