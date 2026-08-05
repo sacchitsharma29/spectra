@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Plus, Eye, Printer, Trash2, Save, PlusCircle, MinusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -53,6 +53,7 @@ export default function QuotationsPage() {
   const [company, setCompany] = useState<CompanySettings | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingPrint, setPendingPrint] = useState(false);
   const [form, setForm] = useState({
     customerName: '',
     address: '',
@@ -74,6 +75,16 @@ export default function QuotationsPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (pendingPrint && preview) {
+      const t = setTimeout(() => {
+        window.print();
+        setPendingPrint(false);
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [pendingPrint, preview]);
+
   const columns: Column<Quotation>[] = [
     { key: 'quoteId', header: 'Quote #', width: '110px' },
     { key: 'customerName', header: 'Customer' },
@@ -85,8 +96,7 @@ export default function QuotationsPage() {
       render: (q: any) => (
         <div className="flex gap-1">
           <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100" onClick={(e) => { e.stopPropagation(); setPreview(q); }} title="View quotation"><Eye className="w-4 h-4" /></button>
-          <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100" onClick={(e) => { e.stopPropagation(); setPreview(q); setTimeout(() => window.print(), 100); }} title="Download PDF"><Printer className="w-4 h-4" /></button>
-          {canWrite && <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(q); }} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-colors" title="Delete quotation"><Trash2 className="w-4 h-4" /></button>}
+          <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100" onClick={(e) => { e.stopPropagation(); setPreview(q); setPendingPrint(true); }} title="Download PDF"><Printer className="w-4 h-4" /></button>          {canWrite && <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(q); }} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-colors" title="Delete quotation"><Trash2 className="w-4 h-4" /></button>}
         </div>
       ),
     },
@@ -176,7 +186,7 @@ export default function QuotationsPage() {
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       const el = docRef.current;
       if (!el) return;
       const pageHeightPx = 1122.5; // 297mm in px (A4)
@@ -254,7 +264,7 @@ export default function QuotationsPage() {
                 </div>
               )}
               <div className="flex justify-between border-t-2 border-gray-900 pt-2 text-base font-bold text-gray-900">
-                <span>Total Amount</span>
+                <span>{docSubsidy > 0 ? 'Net Amount' : 'Total Amount'}</span>
                 <span>{formatCurrency(docTotal)}</span>
               </div>
             </div>
@@ -391,7 +401,7 @@ export default function QuotationsPage() {
               </div>
             )}
             <div className="text-right">
-              <p className="text-xs text-gray-500">{form.applySubsidy ? 'Net Total' : 'Total Amount'}</p>
+              <p className="text-xs text-gray-500">{form.applySubsidy ? 'Net Amount' : 'Total Amount'}</p>
               <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{formatCurrency(netTotal)}</p>
             </div>
           </div>
