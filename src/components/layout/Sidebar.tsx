@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, UserPlus, CalendarCheck,
-  FileText, FileSpreadsheet, Calendar, BarChart3, Settings,
+  FileText, FileSpreadsheet, FolderOpen, Calendar, BarChart3, Settings,
   Bell, X, Menu, Sun, Moon, LogOut, ChevronLeft, ChevronRight, LifeBuoy,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ const menuItems = [
   { label: 'Follow-ups', icon: CalendarCheck, href: '/dashboard/followups' },
   { label: 'Quotations', icon: FileText, href: '/dashboard/quotations' },
   { label: 'Invoices', icon: FileSpreadsheet, href: '/dashboard/invoices' },
+  { label: 'Documents', icon: FolderOpen, href: '/dashboard/documents' },
   { label: 'Calendar', icon: Calendar, href: '/dashboard/calendar' },
   { label: 'Reports', icon: BarChart3, href: '/dashboard/reports' },
   { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
