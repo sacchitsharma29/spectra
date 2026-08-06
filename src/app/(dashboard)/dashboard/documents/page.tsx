@@ -6,23 +6,20 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore';
+import { useCollection, addDocument, updateDocument, deleteDocument } from '@/hooks/useFirestore';
 import { doc, setDoc, collection, query, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDate, toDate } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCanWrite } from '@/lib/permissions';
 import { compressImageToDataUrl } from '@/lib/image';
-import { Plus, Upload, FileText, Image as ImageIcon, File, Eye, Download, Trash2, X } from 'lucide-react';
+import { Plus, Upload, FileText, Image as ImageIcon, File, Eye, Download, Trash2, X, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface DocFile {
   id: string; name: string; category: string; mime: string;
   size: number; chunkCount: number; uploadedBy: string; createdAt: any;
 }
-
-const categories = ['Business', 'Licenses', 'Agreements', 'Certificates', 'Invoices', 'Tax', 'Other'];
 
 const CHUNK_SIZE = 600000;
 const MAX_FILE_BYTES = 15 * 1024 * 1024;
@@ -59,21 +56,25 @@ export default function DocumentsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DocFile | null>(null);
+  const [editTarget, setEditTarget] = useState<DocFile | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('Business');
+  const [category, setCategory] = useState('');
   const [uploading, setUploading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
+  const docCategories = Array.from(new Set(documents.map((d) => d.category).filter(Boolean))) as string[];
   const filtered = activeCategory === 'All' ? documents : documents.filter((d) => d.category === activeCategory);
 
   const resetModal = () => {
     setShowModal(false);
     setFile(null);
     setName('');
-    setCategory('Business');
+    setCategory('');
   };
 
   const handleFileSelected = (selected: File | null) => {
@@ -103,7 +104,7 @@ export default function DocumentsPage() {
 
       const docId = await addDocument('documents', {
         name: name.trim() || file.name,
-        category,
+        category: category.trim() || 'Other',
         mime: file.type,
         size: file.size,
         chunkCount: Math.ceil(dataUrl.length / CHUNK_SIZE),
@@ -162,6 +163,27 @@ export default function DocumentsPage() {
     setBusyId(null);
   };
 
+  const openEdit = (d: DocFile) => {
+    setEditTarget(d);
+    setEditName(d.name);
+    setEditCategory(d.category || '');
+  };
+
+  const handleEditSave = async () => {
+    if (!editTarget) return;
+    if (!editName.trim()) { toast.error('Document name is required'); return; }
+    try {
+      await updateDocument('documents', editTarget.id, {
+        name: editName.trim(),
+        category: editCategory.trim() || 'Other',
+      });
+      toast.success('Document updated');
+      setEditTarget(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update');
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -182,6 +204,21 @@ export default function DocumentsPage() {
     return <File className="w-6 h-6 text-gray-500" />;
   };
 
+  const categoryInput = (value: string, onChange: (v: string) => void) => (
+    <>
+      <Input
+        label="Category"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Type a category, e.g. Bank Documents"
+        list="doc-categories"
+      />
+      <datalist id="doc-categories">
+        {docCategories.map((c) => <option key={c} value={c} />)}
+      </datalist>
+    </>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -190,7 +227,7 @@ export default function DocumentsPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {['All', ...categories].map((c) => (
+        {['All', ...docCategories].map((c) => (
           <button
             key={c}
             onClick={() => setActiveCategory(c)}
@@ -208,7 +245,7 @@ export default function DocumentsPage() {
       <Card><CardContent>
         {!loading && filtered.length === 0 ? (
           <EmptyState
-            title={activeCategory === 'All' ? 'No documents yet' : `No ${activeCategory} documents`}
+            title={activeCategory === 'All' ? 'No documents yet' : `No "${activeCategory}" documents`}
             description="Upload your business documents here for easy access"
             action={canWrite ? { label: 'Upload Document', onClick: () => setShowModal(true) } : undefined}
           />
@@ -220,9 +257,16 @@ export default function DocumentsPage() {
                   <div className="w-11 h-11 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
                     {fileIcon(d)}
                   </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                    {d.category}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      {d.category || 'Other'}
+                    </span>
+                    {canWrite && (
+                      <button onClick={() => openEdit(d)} className="p-1 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors" title="Edit document">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-3 truncate" title={d.name}>{d.name}</p>
                 <p className="text-xs text-gray-500 mt-1">{formatBytes(d.size)} · {formatDate(toDate(d.createdAt))}</p>
@@ -277,17 +321,23 @@ export default function DocumentsPage() {
             </button>
           )}
           <Input label="Document Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Document name" />
-          <Select
-            label="Category"
-            options={categories.map((c) => ({ value: c, label: c }))}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+          {categoryInput(category, setCategory)}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={resetModal}>Cancel</Button>
             <Button onClick={handleUpload} loading={uploading} icon={<Upload className="w-4 h-4" />} disabled={!file}>
               {uploading ? 'Uploading...' : 'Upload'}
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Document" size="sm">
+        <div className="space-y-4">
+          <Input label="Document Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+          {categoryInput(editCategory, setEditCategory)}
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setEditTarget(null)}>Cancel</Button>
+            <Button onClick={handleEditSave}>Save</Button>
           </div>
         </div>
       </Modal>
