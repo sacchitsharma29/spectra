@@ -196,14 +196,14 @@ export default function QuotationsPage() {
       if (!el) return;
       const h = el.offsetHeight;
       const unzoomed = zoom < 1 ? h / zoom : h;
-      if (unzoomed <= PAGE_HEIGHT) {
-        if (compact) setCompact(false);
-        if (zoom < 1) setZoom(1);
+      if (unzoomed > PAGE_HEIGHT && !compact) {
+        setCompact(true);
         return;
       }
-      if (!compact) { setCompact(true); return; }
-      const fit = Math.min(1, Math.max(0.72, FIT_TARGET / unzoomed));
-      if (fit < 1) setZoom(fit);
+      if (compact) {
+        const fit = Math.min(1, Math.max(0.72, FIT_TARGET / unzoomed));
+        if (fit < zoom - 0.001) setZoom(fit);
+      }
     }, [data, compact, revision, zoom]);
 
     useEffect(() => {
