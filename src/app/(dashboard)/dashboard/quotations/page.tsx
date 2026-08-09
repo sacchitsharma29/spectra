@@ -172,6 +172,11 @@ export default function QuotationsPage() {
   const QuotationDoc = ({ data }: { data: any }) => {
     const docRef = useRef<HTMLDivElement>(null);
     const [compact, setCompact] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [revision, setRevision] = useState(0);
+
+    const PAGE_HEIGHT = 1122.5; // 297mm in px (A4)
+    const FIT_TARGET = 1080; // ~4% headroom for Windows font/scale differences
 
     const items: QuoteItem[] = data.items || [];
     const docSubtotal = data.subtotal !== undefined ? Number(data.subtotal) : items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
@@ -189,12 +194,41 @@ export default function QuotationsPage() {
     useLayoutEffect(() => {
       const el = docRef.current;
       if (!el) return;
-      const pageHeightPx = 1122.5; // 297mm in px (A4)
-      setCompact(el.offsetHeight > pageHeightPx);
+      const h = el.offsetHeight;
+      const unzoomed = zoom < 1 ? h / zoom : h;
+      if (unzoomed <= PAGE_HEIGHT) {
+        if (compact) setCompact(false);
+        if (zoom < 1) setZoom(1);
+        return;
+      }
+      if (!compact) { setCompact(true); return; }
+      const fit = Math.min(1, Math.max(0.72, FIT_TARGET / unzoomed));
+      if (fit < 1) setZoom(fit);
+    }, [data, compact, revision, zoom]);
+
+    useEffect(() => {
+      const el = docRef.current;
+      if (!el) return;
+      const imgs = Array.from(el.querySelectorAll('img'));
+      const onImg = () => setRevision((r) => r + 1);
+      imgs.forEach((img) => {
+        if (!img.complete) {
+          img.addEventListener('load', onImg, { once: true });
+          img.addEventListener('error', onImg, { once: true });
+        }
+      });
+      const t = setTimeout(onImg, 700);
+      return () => {
+        clearTimeout(t);
+        imgs.forEach((img) => {
+          img.removeEventListener('load', onImg);
+          img.removeEventListener('error', onImg);
+        });
+      };
     }, [data]);
 
     return (
-      <div ref={docRef} className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
+      <div ref={docRef} style={{ zoom }} className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
@@ -414,7 +448,7 @@ export default function QuotationsPage() {
 
       <Modal isOpen={!!preview} onClose={() => setPreview(null)} title="Quotation Preview" size="xl">
         <div className="space-y-4">
-          <QuotationDoc data={preview} />
+          <QuotationDoc key={JSON.stringify(preview)} data={preview} />
           <div className="flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 pt-4">
             <Button variant="secondary" onClick={() => window.print()} icon={<Printer className="w-4 h-4" />}>Print / PDF</Button>
             <Button onClick={handleSave} loading={saving} icon={<Save className="w-4 h-4" />}>Save Quotation</Button>
