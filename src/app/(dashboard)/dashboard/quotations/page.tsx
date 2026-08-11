@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDate, formatCurrency, getStatusColor } from '@/lib/utils';
 import { useCanWrite } from '@/lib/permissions';
@@ -48,7 +48,7 @@ interface QuoteItem {
 
 export default function QuotationsPage() {
   const [showModal, setShowModal] = useState(false);
-  const { data: quotations, loading } = useCollection<Quotation>('quotations');
+  const { data: quotations, loading } = useCollection<Quotation>('quotations', [orderBy('createdAt', 'desc')]);
   const canWrite = useCanWrite();
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [company, setCompany] = useState<CompanySettings | null>(null);
