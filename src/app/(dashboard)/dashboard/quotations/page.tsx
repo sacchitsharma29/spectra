@@ -260,7 +260,7 @@ export default function QuotationsPage() {
       <div
         ref={docRef}
         style={{ '--doc-scale': scale } as React.CSSProperties}
-        className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
+        className={`print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]${scale < 1 ? ' print-fit' : ''}`}>
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />

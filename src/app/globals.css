@@ -143,9 +143,9 @@
     visibility: visible;
   }
   .print-area {
-    position: absolute;
+    position: fixed;
     top: 0;
-    left: calc(50% - 105mm * var(--doc-scale, 1));
+    left: 0;
     width: 210mm;
     height: auto !important;
     min-height: 0 !important;
@@ -156,9 +156,12 @@
     border-radius: 0;
     box-shadow: none;
     overflow: visible !important;
-    zoom: var(--doc-scale, 1);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  .print-area.print-fit {
+    left: calc(105mm * (1 - var(--doc-scale, 1)));
+    zoom: var(--doc-scale, 1);
   }
   .print-area table tr,
   .print-area table tbody tr {
