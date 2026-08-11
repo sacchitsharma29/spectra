@@ -195,7 +195,7 @@ export default function QuotationsPage() {
   const QuotationDoc = ({ data }: { data: any }) => {
     const docRef = useRef<HTMLDivElement>(null);
     const [compact, setCompact] = useState(false);
-    const [zoom, setZoom] = useState(1);
+    const [scale, setScale] = useState(1);
     const [revision, setRevision] = useState(0);
 
     const PAGE_HEIGHT = 1122.5; // 297mm in px (A4)
@@ -225,16 +225,15 @@ export default function QuotationsPage() {
       const el = docRef.current;
       if (!el) return;
       const h = el.offsetHeight;
-      const unzoomed = zoom < 1 ? h / zoom : h;
-      if (unzoomed > PAGE_HEIGHT && !compact) {
+      if (h > PAGE_HEIGHT && !compact) {
         setCompact(true);
         return;
       }
       if (compact) {
-        const fit = Math.min(1, Math.max(0.72, FIT_TARGET / unzoomed));
-        if (fit < zoom - 0.001) setZoom(fit);
+        const fit = Math.min(1, Math.max(0.72, FIT_TARGET / h));
+        if (fit < scale - 0.001) setScale(fit);
       }
-    }, [data, compact, revision, zoom]);
+    }, [data, compact, revision, scale]);
 
     useEffect(() => {
       const el = docRef.current;
@@ -258,7 +257,10 @@ export default function QuotationsPage() {
     }, [data]);
 
     return (
-      <div ref={docRef} style={{ zoom }} className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
+      <div
+        ref={docRef}
+        style={{ '--doc-scale': scale } as React.CSSProperties}
+        className="print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]">
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
             <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />

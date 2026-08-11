@@ -144,8 +144,8 @@
   }
   .print-area {
     position: absolute;
-    left: 0;
     top: 0;
+    left: calc(50% - 105mm * var(--doc-scale, 1));
     width: 210mm;
     height: auto !important;
     min-height: 0 !important;
@@ -156,6 +156,7 @@
     border-radius: 0;
     box-shadow: none;
     overflow: visible !important;
+    zoom: var(--doc-scale, 1);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
