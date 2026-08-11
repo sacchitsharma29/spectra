@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore';
 import { doc, getDoc } from 'firebase/firestore';
@@ -59,6 +60,7 @@ export default function QuotationsPage() {
     address: '',
     phone: '',
     date: new Date().toISOString().slice(0, 10),
+    systemType: '',
     applySubsidy: false,
     subsidy: '',
     totalAmount: '',
@@ -129,6 +131,7 @@ export default function QuotationsPage() {
 
   const handleGenerate = () => {
     if (!form.customerName) { toast.error('Customer name is required'); return; }
+    if (!form.systemType) { toast.error('Select the system type (On-Grid / Hybrid)'); return; }
     const validItems = form.items.filter((i) => i.description.trim());
     if (validItems.length === 0) { toast.error('Add at least one item'); return; }
     if (totalAmount <= 0) { toast.error('Enter the total amount'); return; }
@@ -138,6 +141,7 @@ export default function QuotationsPage() {
       address: form.address,
       phone: form.phone,
       date: form.date,
+      systemType: form.systemType,
       items: validItems.map((i) => ({
         description: i.description.trim(),
         brand: i.brand.trim(),
@@ -164,7 +168,7 @@ export default function QuotationsPage() {
       toast.success('Quotation saved');
       setPreview(null);
       setShowModal(false);
-      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', brand: '', quantity: '1' }] });
+      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), systemType: '', applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', brand: '', quantity: '1' }] });
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
     setSaving(false);
   };
@@ -190,6 +194,21 @@ export default function QuotationsPage() {
     const paymentLines = company?.paymentDetails?.trim()
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
+
+    const systemBadge = (type?: string) => {
+      if (!type) return null;
+      const style =
+        type === 'Hybrid'
+          ? 'bg-green-50 text-green-700 border-green-300'
+          : type === 'Off-Grid'
+          ? 'bg-purple-50 text-purple-700 border-purple-300'
+          : 'bg-blue-50 text-blue-700 border-blue-300';
+      return (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md border font-bold uppercase tracking-wide ${style} ${compact ? 'text-[10px]' : 'text-xs'}`}>
+          {type}
+        </span>
+      );
+    };
 
     useLayoutEffect(() => {
       const el = docRef.current;
@@ -248,7 +267,10 @@ export default function QuotationsPage() {
           )}
           <div className={`flex items-start justify-between ${compact ? 'mb-3' : 'mb-5'}`}>
             <div>
-              <h2 className={`font-bold tracking-widest text-gray-900 ${compact ? 'text-lg' : 'text-2xl'}`}>QUOTATION</h2>
+              <div className="flex items-center gap-2.5">
+                <h2 className={`font-bold tracking-widest text-gray-900 ${compact ? 'text-lg' : 'text-2xl'}`}>QUOTATION</h2>
+                {systemBadge(data.systemType)}
+              </div>
               <p className="text-xs text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
             </div>
             <div className="text-right">
@@ -385,6 +407,17 @@ export default function QuotationsPage() {
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
           </div>
+          <Select
+            label="System Type *"
+            placeholder="Select system type"
+            value={form.systemType}
+            onChange={(e) => setForm({ ...form, systemType: e.target.value })}
+            options={[
+              { value: 'On-Grid', label: 'On-Grid' },
+              { value: 'Hybrid', label: 'Hybrid' },
+              { value: 'Off-Grid', label: 'Off-Grid' },
+            ]}
+          />
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Items</p>
