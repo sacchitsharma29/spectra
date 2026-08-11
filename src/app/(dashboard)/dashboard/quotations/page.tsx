@@ -214,20 +214,12 @@ export default function QuotationsPage() {
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
 
-    const systemBadge = (type?: string) => {
-      if (!type) return null;
-      const style =
-        type === 'Hybrid'
-          ? 'bg-green-600 text-white'
-          : type === 'Off-Grid'
-          ? 'bg-purple-600 text-white'
-          : 'bg-blue-600 text-white';
-      return (
-        <span className={`inline-flex items-center rounded-md font-bold uppercase tracking-wide ${style} ${compact ? 'px-3 py-1 text-xs' : 'px-4 py-1.5 text-sm'}`}>
-          {systemTypeLabel(type)}
-        </span>
-      );
-    };
+    const systemColor =
+      data.systemType === 'Hybrid'
+        ? 'bg-green-600'
+        : data.systemType === 'Off-Grid'
+        ? 'bg-purple-600'
+        : 'bg-blue-600';
 
     useLayoutEffect(() => {
       const el = docRef.current;
@@ -286,16 +278,18 @@ export default function QuotationsPage() {
           )}
           <div className={`flex items-start justify-between ${compact ? 'mb-3' : 'mb-5'}`}>
             <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className={`font-bold tracking-widest text-gray-900 ${compact ? 'text-lg' : 'text-2xl'}`}>QUOTATION</h2>
-                {systemBadge(data.systemType)}
-              </div>
+              <h2 className={`font-bold tracking-widest text-gray-900 ${compact ? 'text-lg' : 'text-2xl'}`}>QUOTATION</h2>
               <p className="text-xs text-gray-500 mt-1">Quote #: <span className="font-medium text-gray-700">{data.quoteId || 'New Quotation'}</span></p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600"><span className="text-gray-500">Date: </span><span className="font-semibold">{data.date ? formatDate(data.date) : formatDate(data.createdAt)}</span></p>
             </div>
           </div>
+          {data.systemType && (
+            <div className={`flex items-center justify-center rounded-md text-white font-bold uppercase tracking-wider ${systemColor} ${compact ? 'py-1.5 text-sm mb-3' : 'py-2.5 text-lg mb-5'}`}>
+              System Type: {systemTypeLabel(data.systemType)}
+            </div>
+          )}
           <div className={compact ? 'mb-3' : 'mb-5'}>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Customer Details</p>
             <div className={`border border-gray-300 rounded-lg ${compact ? 'p-3' : 'p-4'}`}>
