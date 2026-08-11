@@ -66,7 +66,11 @@ export async function cropWhiteBorders(dataUrl: string, tolerance = 24): Promise
     return [data[i], data[i + 1], data[i + 2]];
   };
 
-  const bg = at(0, 0);
+  const bg = [0, 1, 2].map((i) =>
+    Math.round(
+      [at(0, 0), at(w - 1, 0), at(0, h - 1), at(w - 1, h - 1)].reduce((s, c) => s + c[i], 0) / 4
+    )
+  );
   const isBg = (x: number, y: number) => {
     const i = (y * w + x) * 4;
     return (
