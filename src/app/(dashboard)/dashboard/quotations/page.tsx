@@ -18,7 +18,7 @@ import toast from 'react-hot-toast';
 
 interface Quotation {
   id: string; quoteId: string; customerName: string; solarCapacity: string;
-  totalAmount: number; status: string; createdAt: any; version: number;
+  systemType?: string; totalAmount: number; status: string; createdAt: any; version: number;
 }
 
 interface CompanySettings {
@@ -90,6 +90,20 @@ export default function QuotationsPage() {
   const columns: Column<Quotation>[] = [
     { key: 'quoteId', header: 'Quote #', width: '110px' },
     { key: 'customerName', header: 'Customer' },
+    {
+      key: 'systemType', header: 'System', width: '110px',
+      render: (q) => q.systemType ? (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs font-medium ${
+          q.systemType === 'Hybrid'
+            ? 'bg-green-50 text-green-700 border-green-300'
+            : q.systemType === 'Off-Grid'
+            ? 'bg-purple-50 text-purple-700 border-purple-300'
+            : 'bg-blue-50 text-blue-700 border-blue-300'
+        }`}>
+          {q.systemType}
+        </span>
+      ) : <span className="text-gray-400">—</span>,
+    },
     { key: 'totalAmount', header: 'Amount', render: (q) => <span className="font-semibold">{formatCurrency(q.totalAmount)}</span> },
     { key: 'status', header: 'Status', render: (q) => <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(q.status)}`}>{q.status}</span> },
     { key: 'createdAt', header: 'Date', render: (q) => <span className="text-gray-500">{formatDate(q.createdAt)}</span> },
