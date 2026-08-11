@@ -39,6 +39,11 @@ const DEFAULT_TERMS = [
   'In case of any dispute, the jurisdiction will be local courts only.',
 ];
 
+const systemTypeLabel = (type?: string) => {
+  if (type === 'Hybrid') return 'Hybrid With Battery';
+  return type || '';
+};
+
 interface QuoteItem {
   description: string;
   brand?: string;
@@ -93,14 +98,14 @@ export default function QuotationsPage() {
     {
       key: 'systemType', header: 'System', width: '110px',
       render: (q) => q.systemType ? (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs font-medium ${
+        <span className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-bold ${
           q.systemType === 'Hybrid'
-            ? 'bg-green-50 text-green-700 border-green-300'
+            ? 'bg-green-600 text-white border-green-600'
             : q.systemType === 'Off-Grid'
-            ? 'bg-purple-50 text-purple-700 border-purple-300'
-            : 'bg-blue-50 text-blue-700 border-blue-300'
+            ? 'bg-purple-600 text-white border-purple-600'
+            : 'bg-blue-600 text-white border-blue-600'
         }`}>
-          {q.systemType}
+          {systemTypeLabel(q.systemType)}
         </span>
       ) : <span className="text-gray-400">—</span>,
     },
@@ -213,13 +218,13 @@ export default function QuotationsPage() {
       if (!type) return null;
       const style =
         type === 'Hybrid'
-          ? 'bg-green-50 text-green-700 border-green-300'
+          ? 'bg-green-600 text-white'
           : type === 'Off-Grid'
-          ? 'bg-purple-50 text-purple-700 border-purple-300'
-          : 'bg-blue-50 text-blue-700 border-blue-300';
+          ? 'bg-purple-600 text-white'
+          : 'bg-blue-600 text-white';
       return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md border font-bold uppercase tracking-wide ${style} ${compact ? 'text-[10px]' : 'text-xs'}`}>
-          {type}
+        <span className={`inline-flex items-center rounded-md font-bold uppercase tracking-wide ${style} ${compact ? 'px-3 py-1 text-xs' : 'px-4 py-1.5 text-sm'}`}>
+          {systemTypeLabel(type)}
         </span>
       );
     };
