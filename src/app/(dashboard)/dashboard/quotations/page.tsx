@@ -13,6 +13,7 @@ import { useCollection, addDocument, deleteDocument } from '@/hooks/useFirestore
 import { doc, getDoc, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDate, formatCurrency, getStatusColor } from '@/lib/utils';
+import { cropWhiteBorders } from '@/lib/image';
 import { useCanWrite } from '@/lib/permissions';
 import toast from 'react-hot-toast';
 
@@ -197,6 +198,19 @@ export default function QuotationsPage() {
     const [compact, setCompact] = useState(false);
     const [scale, setScale] = useState(1);
     const [revision, setRevision] = useState(0);
+    const [headerUrl, setHeaderUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+      let cancelled = false;
+      if (company?.headerUrl) {
+        cropWhiteBorders(company.headerUrl)
+          .then((u) => { if (!cancelled) setHeaderUrl(u); })
+          .catch(() => { if (!cancelled) setHeaderUrl(company.headerUrl); });
+      } else {
+        setHeaderUrl(null);
+      }
+      return () => { cancelled = true; };
+    }, [company?.headerUrl]);
 
     const PAGE_HEIGHT = 1122.5; // 297mm in px (A4)
     const FIT_TARGET = 1080; // ~4% headroom for Windows font/scale differences
@@ -233,7 +247,7 @@ export default function QuotationsPage() {
         const fit = Math.min(1, Math.max(0.72, FIT_TARGET / h));
         if (fit < scale - 0.001) setScale(fit);
       }
-    }, [data, compact, revision, scale]);
+    }, [data, compact, revision, scale, headerUrl]);
 
     useEffect(() => {
       const el = docRef.current;
@@ -263,7 +277,7 @@ export default function QuotationsPage() {
         className={`print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]${scale < 1 ? ' print-fit' : ''}`}>
         {company?.headerUrl && (
           <div className="w-full leading-[0]">
-            <img src={company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
+            <img src={headerUrl || company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
           </div>
         )}
         <div className={compact ? 'px-6 sm:px-8 pt-3 pb-6' : 'px-8 sm:px-12 pt-6 pb-8'}>
