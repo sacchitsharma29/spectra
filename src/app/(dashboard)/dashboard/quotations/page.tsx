@@ -482,7 +482,6 @@ export default function QuotationsPage() {
               options={[
                 { value: 'On-Grid', label: 'On-Grid' },
                 { value: 'Hybrid', label: 'Hybrid' },
-                { value: 'Off-Grid', label: 'Off-Grid' },
               ]}
             />
           </div>
