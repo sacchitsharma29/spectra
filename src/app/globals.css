@@ -175,7 +175,8 @@
     print-color-adjust: exact;
   }
   .print-area.print-fit {
-    left: calc(105mm * (1 - var(--doc-scale, 1)));
+    width: calc(210mm / var(--doc-scale, 1));
+    left: 0;
     zoom: var(--doc-scale, 1);
   }
   .print-area table tr,
