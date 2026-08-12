@@ -43,7 +43,7 @@ export async function compressImageToDataUrl(
   });
 }
 
-export async function cropWhiteBorders(dataUrl: string, tolerance = 24): Promise<string> {
+export async function cropWhiteBorders(dataUrl: string, tolerance = 32): Promise<string> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new Image();
     i.onload = () => resolve(i);
@@ -66,11 +66,35 @@ export async function cropWhiteBorders(dataUrl: string, tolerance = 24): Promise
     return [data[i], data[i + 1], data[i + 2]];
   };
 
-  const bg = [0, 1, 2].map((i) =>
-    Math.round(
-      [at(0, 0), at(w - 1, 0), at(0, h - 1), at(w - 1, h - 1)].reduce((s, c) => s + c[i], 0) / 4
-    )
-  );
+  const counts = new Map<string, { c: number[]; n: number }>();
+  const addBorder = (c: number[]) => {
+    const k = `${c[0] >> 5}|${c[1] >> 5}|${c[2] >> 5}`;
+    const e = counts.get(k);
+    if (e) e.n++;
+    else counts.set(k, { c, n: 1 });
+  };
+  for (let x = 0; x < w; x++) {
+    addBorder(at(x, 0));
+    addBorder(at(x, Math.min(1, h - 1)));
+    addBorder(at(x, h - 1));
+    addBorder(at(x, Math.max(0, h - 2)));
+  }
+  for (let y = 0; y < h; y++) {
+    addBorder(at(0, y));
+    addBorder(at(Math.min(1, w - 1), y));
+    addBorder(at(w - 1, y));
+    addBorder(at(Math.max(0, w - 2), y));
+  }
+
+  let bg = [0, 0, 0];
+  let best = -1;
+  for (const e of counts.values()) {
+    if (e.n > best) {
+      best = e.n;
+      bg = e.c;
+    }
+  }
+
   const isBg = (x: number, y: number) => {
     const i = (y * w + x) * 4;
     return (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Plus, Eye, Printer, Trash2, Save, PlusCircle, MinusCircle } from 'lucide-react';
+import { Plus, Eye, Printer, Trash2, Save, PlusCircle, MinusCircle, Sun, Zap, BatteryCharging } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { DataTable, Column } from '@/components/ui/DataTable';
@@ -99,13 +99,14 @@ export default function QuotationsPage() {
     {
       key: 'systemType', header: 'System', width: '110px',
       render: (q) => q.systemType ? (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-bold ${
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${
           q.systemType === 'Hybrid'
-            ? 'bg-green-600 text-white border-green-600'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
             : q.systemType === 'Off-Grid'
-            ? 'bg-purple-600 text-white border-purple-600'
-            : 'bg-blue-600 text-white border-blue-600'
+            ? 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800'
+            : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
         }`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
           {systemTypeLabel(q.systemType)}
         </span>
       ) : <span className="text-gray-400">—</span>,
@@ -228,12 +229,12 @@ export default function QuotationsPage() {
       ? company.paymentDetails.split('\n').map((s) => s.trim()).filter(Boolean)
       : [];
 
-    const systemColor =
+    const systemIcon =
       data.systemType === 'Hybrid'
-        ? 'bg-green-600'
+        ? <BatteryCharging className={compact ? 'w-4 h-4' : 'w-5 h-5'} />
         : data.systemType === 'Off-Grid'
-        ? 'bg-purple-600'
-        : 'bg-blue-600';
+        ? <Zap className={compact ? 'w-4 h-4' : 'w-5 h-5'} />
+        : <Sun className={compact ? 'w-4 h-4' : 'w-5 h-5'} />;
 
     useLayoutEffect(() => {
       const el = docRef.current;
@@ -276,8 +277,8 @@ export default function QuotationsPage() {
         style={{ '--doc-scale': scale } as React.CSSProperties}
         className={`print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]${scale < 1 ? ' print-fit' : ''}`}>
         {company?.headerUrl && (
-          <div className="w-full leading-[0]">
-            <img src={headerUrl || company.headerUrl} alt="Company header" className="w-full h-auto object-contain" />
+          <div className="w-full leading-[0] overflow-hidden">
+            <img src={headerUrl || company.headerUrl} alt="Company header" className="w-[102%] max-w-none h-auto object-contain -ml-[1%]" />
           </div>
         )}
         <div className={compact ? 'px-6 sm:px-8 pt-3 pb-6' : 'px-8 sm:px-12 pt-6 pb-8'}>
@@ -302,8 +303,24 @@ export default function QuotationsPage() {
             </div>
           </div>
           {data.systemType && (
-            <div className={`flex items-center justify-center rounded-md text-white font-bold uppercase tracking-wider ${systemColor} ${compact ? 'py-1.5 text-sm mb-3' : 'py-2.5 text-lg mb-5'}`}>
-              System Type: {systemTypeLabel(data.systemType)}
+            <div
+              className={`relative w-full overflow-hidden rounded-lg text-white print-break-avoid ${compact ? 'mb-3' : 'mb-5'}`}
+              style={{ background: 'linear-gradient(90deg, #172554 0%, #1e40af 55%, #2563eb 100%)' }}
+            >
+              <span className={`absolute -right-1 -top-2 opacity-15 text-amber-300 ${compact ? 'w-14 h-14' : 'w-24 h-24'}`}>
+                <Sun className="w-full h-full" />
+              </span>
+              <div className={`relative flex items-center ${compact ? 'gap-2.5 px-3 py-2' : 'gap-3.5 px-5 py-3'}`}>
+                <span className={`flex items-center justify-center rounded-full bg-amber-400 text-[#172554] shrink-0 ${compact ? 'w-8 h-8' : 'w-11 h-11'}`}>
+                  {systemIcon}
+                </span>
+                <div className="flex-1">
+                  <p className={`font-semibold uppercase tracking-[0.22em] text-amber-300 ${compact ? 'text-[9px]' : 'text-[10px]'}`}>System Type</p>
+                  <p className={`font-extrabold uppercase tracking-wide leading-tight ${compact ? 'text-sm' : 'text-xl'}`}>
+                    {systemTypeLabel(data.systemType)}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
           <div className={compact ? 'mb-3' : 'mb-5'}>
