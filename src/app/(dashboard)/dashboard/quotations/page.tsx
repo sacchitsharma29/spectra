@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 
 interface Quotation {
   id: string; quoteId: string; customerName: string; solarCapacity: string;
-  systemType?: string; totalAmount: number; status: string; createdAt: any; version: number;
+  systemType?: string; systemCapacity?: string; totalAmount: number; status: string; createdAt: any; version: number;
 }
 
 interface CompanySettings {
@@ -41,8 +41,17 @@ const DEFAULT_TERMS = [
 ];
 
 const systemTypeLabel = (type?: string) => {
-  if (type === 'Hybrid') return 'Hybrid With Battery';
+  if (type === 'Hybrid') return 'Hybrid System With Battery';
+  if (type === 'On-Grid') return 'On-Grid System';
+  if (type === 'Off-Grid') return 'Off-Grid System';
   return type || '';
+};
+
+const systemTitle = (capacity?: string, type?: string) => {
+  const base = systemTypeLabel(type);
+  if (!base) return capacity?.trim() || '';
+  const cap = capacity?.trim();
+  return cap ? `${cap} ${base}` : base;
 };
 
 interface QuoteItem {
@@ -67,6 +76,7 @@ export default function QuotationsPage() {
     phone: '',
     date: new Date().toISOString().slice(0, 10),
     systemType: '',
+    systemCapacity: '',
     applySubsidy: false,
     subsidy: '',
     totalAmount: '',
@@ -107,7 +117,7 @@ export default function QuotationsPage() {
             : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
         }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          {systemTypeLabel(q.systemType)}
+          {systemTitle(q.systemCapacity, q.systemType)}
         </span>
       ) : <span className="text-gray-400">—</span>,
     },
@@ -163,6 +173,7 @@ export default function QuotationsPage() {
       phone: form.phone,
       date: form.date,
       systemType: form.systemType,
+      systemCapacity: form.systemCapacity.trim(),
       items: validItems.map((i) => ({
         description: i.description.trim(),
         brand: i.brand.trim(),
@@ -189,7 +200,7 @@ export default function QuotationsPage() {
       toast.success('Quotation saved');
       setPreview(null);
       setShowModal(false);
-      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), systemType: '', applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', brand: '', quantity: '1' }] });
+      setForm({ customerName: '', address: '', phone: '', date: new Date().toISOString().slice(0, 10), systemType: '', systemCapacity: '', applySubsidy: false, subsidy: '', totalAmount: '', items: [{ description: '', brand: '', quantity: '1' }] });
     } catch (err: any) { toast.error(err?.message || 'Failed to save'); }
     setSaving(false);
   };
@@ -325,7 +336,7 @@ export default function QuotationsPage() {
                 <div className="flex-1">
                   <p className={`font-semibold uppercase tracking-[0.22em] text-amber-300 ${compact ? 'text-[9px]' : 'text-[10px]'}`}>System Type</p>
                   <p className={`font-extrabold uppercase tracking-wide leading-tight ${compact ? 'text-sm' : 'text-xl'}`}>
-                    {systemTypeLabel(data.systemType)}
+                    {systemTitle(data.systemCapacity, data.systemType)}
                   </p>
                 </div>
               </div>
@@ -461,17 +472,20 @@ export default function QuotationsPage() {
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
           </div>
-          <Select
-            label="System Type *"
-            placeholder="Select system type"
-            value={form.systemType}
-            onChange={(e) => setForm({ ...form, systemType: e.target.value })}
-            options={[
-              { value: 'On-Grid', label: 'On-Grid' },
-              { value: 'Hybrid', label: 'Hybrid' },
-              { value: 'Off-Grid', label: 'Off-Grid' },
-            ]}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="System Capacity (KW)" placeholder="e.g. 3KW" value={form.systemCapacity} onChange={(e) => setForm({ ...form, systemCapacity: e.target.value })} />
+            <Select
+              label="System Type *"
+              placeholder="Select system type"
+              value={form.systemType}
+              onChange={(e) => setForm({ ...form, systemType: e.target.value })}
+              options={[
+                { value: 'On-Grid', label: 'On-Grid' },
+                { value: 'Hybrid', label: 'Hybrid' },
+                { value: 'Off-Grid', label: 'Off-Grid' },
+              ]}
+            />
+          </div>
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Items</p>
