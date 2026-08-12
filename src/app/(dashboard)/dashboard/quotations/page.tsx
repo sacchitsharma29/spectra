@@ -278,7 +278,15 @@ export default function QuotationsPage() {
         className={`print-area bg-white text-gray-900 overflow-hidden rounded-lg shadow-sm mx-auto w-full max-w-[210mm]${scale < 1 ? ' print-fit' : ''}`}>
         {company?.headerUrl && (
           <div className="w-full leading-[0] overflow-hidden">
-            <img src={headerUrl || company.headerUrl} alt="Company header" className="w-[102%] max-w-none h-auto object-contain -ml-[1%]" />
+            <img
+              src={headerUrl || company.headerUrl}
+              alt="Company header"
+              className={
+                headerUrl && headerUrl !== company.headerUrl
+                  ? 'w-full max-w-none h-auto object-contain'
+                  : 'w-[104%] max-w-none h-auto object-contain -ml-[2%]'
+              }
+            />
           </div>
         )}
         <div className={compact ? 'px-6 sm:px-8 pt-3 pb-6' : 'px-8 sm:px-12 pt-6 pb-8'}>

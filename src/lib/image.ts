@@ -66,34 +66,34 @@ export async function cropWhiteBorders(dataUrl: string, tolerance = 32): Promise
     return [data[i], data[i + 1], data[i + 2]];
   };
 
-  const counts = new Map<string, { c: number[]; n: number }>();
-  const addBorder = (c: number[]) => {
-    const k = `${c[0] >> 5}|${c[1] >> 5}|${c[2] >> 5}`;
-    const e = counts.get(k);
-    if (e) e.n++;
-    else counts.set(k, { c, n: 1 });
+  const cornerAvg = (x0: number, y0: number, s: number) => {
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let y = y0; y < Math.min(y0 + s, h); y++) {
+      for (let x = x0; x < Math.min(x0 + s, w); x++) {
+        const c = at(x, y);
+        r += c[0]; g += c[1]; b += c[2]; n++;
+      }
+    }
+    return [r / n, g / n, b / n];
   };
-  for (let x = 0; x < w; x++) {
-    addBorder(at(x, 0));
-    addBorder(at(x, Math.min(1, h - 1)));
-    addBorder(at(x, h - 1));
-    addBorder(at(x, Math.max(0, h - 2)));
-  }
-  for (let y = 0; y < h; y++) {
-    addBorder(at(0, y));
-    addBorder(at(Math.min(1, w - 1), y));
-    addBorder(at(w - 1, y));
-    addBorder(at(Math.max(0, w - 2), y));
-  }
 
-  let bg = [0, 0, 0];
-  let best = -1;
-  for (const e of counts.values()) {
-    if (e.n > best) {
-      best = e.n;
-      bg = e.c;
+  const corners = [
+    cornerAvg(0, 0, 10),
+    cornerAvg(w - 10, 0, 10),
+    cornerAvg(0, h - 10, 10),
+    cornerAvg(w - 10, h - 10, 10),
+  ];
+
+  let bg: number[] | null = null;
+  let bestMin = 228;
+  for (const c of corners) {
+    const m = Math.min(c[0], c[1], c[2]);
+    if (m > bestMin) {
+      bestMin = m;
+      bg = c;
     }
   }
+  if (!bg) return dataUrl;
 
   const isBg = (x: number, y: number) => {
     const i = (y * w + x) * 4;
@@ -117,6 +117,7 @@ export async function cropWhiteBorders(dataUrl: string, tolerance = 32): Promise
   }
 
   if (maxX < minX || maxY < minY) return dataUrl;
+  if (minX === 0 && minY === 0 && maxX === w - 1 && maxY === h - 1) return dataUrl;
 
   const cw = maxX - minX + 1;
   const ch = maxY - minY + 1;
