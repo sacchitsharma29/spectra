@@ -58,7 +58,6 @@ export default function DocumentsPage() {
   const [deleteTarget, setDeleteTarget] = useState<DocFile | null>(null);
   const [editTarget, setEditTarget] = useState<DocFile | null>(null);
   const [editName, setEditName] = useState('');
-  const [editCategory, setEditCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -164,7 +163,6 @@ export default function DocumentsPage() {
   const openEdit = (d: DocFile) => {
     setEditTarget(d);
     setEditName(d.name);
-    setEditCategory(d.category || '');
   };
 
   const handleEditSave = async () => {
@@ -173,7 +171,7 @@ export default function DocumentsPage() {
     try {
       await updateDocument('documents', editTarget.id, {
         name: editName.trim(),
-        category: editCategory.trim() || 'Other',
+        category: editTarget.category || 'Other',
       });
       toast.success('Document updated');
       setEditTarget(null);
@@ -201,21 +199,6 @@ export default function DocumentsPage() {
     if (d.mime === 'application/pdf') return <FileText className="w-6 h-6 text-red-500" />;
     return <File className="w-6 h-6 text-gray-500" />;
   };
-
-  const categoryInput = (value: string, onChange: (v: string) => void) => (
-    <>
-      <Input
-        label="Category"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Type a category, e.g. Bank Documents"
-        list="doc-categories"
-      />
-      <datalist id="doc-categories">
-        {docCategories.map((c) => <option key={c} value={c} />)}
-      </datalist>
-    </>
-  );
 
   return (
     <div className="space-y-6">
@@ -331,7 +314,6 @@ export default function DocumentsPage() {
       <Modal isOpen={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Document" size="sm">
         <div className="space-y-4">
           <Input label="Document Name" value={editName} onChange={(e) => setEditName(e.target.value)} />
-          {categoryInput(editCategory, setEditCategory)}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setEditTarget(null)}>Cancel</Button>
             <Button onClick={handleEditSave}>Save</Button>
