@@ -61,7 +61,6 @@ export default function DocumentsPage() {
   const [editCategory, setEditCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
   const [uploading, setUploading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +73,6 @@ export default function DocumentsPage() {
     setShowModal(false);
     setFile(null);
     setName('');
-    setCategory('');
   };
 
   const handleFileSelected = (selected: File | null) => {
@@ -104,7 +102,7 @@ export default function DocumentsPage() {
 
       const docId = await addDocument('documents', {
         name: name.trim() || file.name,
-        category: category.trim() || 'Other',
+        category: 'Other',
         mime: file.type,
         size: file.size,
         chunkCount: Math.ceil(dataUrl.length / CHUNK_SIZE),
@@ -321,7 +319,6 @@ export default function DocumentsPage() {
             </button>
           )}
           <Input label="Document Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Document name" />
-          {categoryInput(category, setCategory)}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={resetModal}>Cancel</Button>
             <Button onClick={handleUpload} loading={uploading} icon={<Upload className="w-4 h-4" />} disabled={!file}>
